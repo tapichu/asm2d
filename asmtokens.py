@@ -38,7 +38,9 @@ def t_eolcomment(t):
     r'(\#|;).*'
     pass
 
-t_MAIN = r'\.(main|MAIN)'
+def t_MAIN(t):
+    r'\.(?:main|MAIN)'
+    return t
 
 def t_CONST_IDENTIFIER(t):
     r'\.[A-Za-z][A-Za-z0-9_]*'

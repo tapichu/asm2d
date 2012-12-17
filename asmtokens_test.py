@@ -2,9 +2,8 @@ import sys
 import ply.lex as lex
 import asmtokens
 
-asmlexer = lex.lex(module=asmtokens)
-
 def test_lexer(input_string):
+    asmlexer = lex.lex(module=asmtokens)
     asmlexer.input(input_string)
     result = []
     while True:
