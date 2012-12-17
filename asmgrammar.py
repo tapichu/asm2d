@@ -70,7 +70,7 @@ def p_instruction_jsr(p):
     'instruction : JSR IDENTIFIER'
     p[0] = (p[1], p[2])
 
-# LDB, LDD, LDG, LDK, LDR, LDX, LDXA, LDXB, LDYA
+# LDB, LDD, LDG, LDK, LDR, LDX, LDXA, LDXB, LDYA, LDYB
 def p_instruction_load_const(p):
     '''instruction : LDB CONST_IDENTIFIER
                    | LDD CONST_IDENTIFIER
@@ -80,7 +80,8 @@ def p_instruction_load_const(p):
                    | LDX CONST_IDENTIFIER
                    | LDXA CONST_IDENTIFIER
                    | LDXB CONST_IDENTIFIER
-                   | LDYA CONST_IDENTIFIER'''
+                   | LDYA CONST_IDENTIFIER
+                   | LDYB CONST_IDENTIFIER'''
     p[0] = (p[1], 'const', p[2])
 
 def p_instruction_load(p):
@@ -92,7 +93,8 @@ def p_instruction_load(p):
                    | LDX HEX_NUM
                    | LDXA HEX_NUM
                    | LDXB HEX_NUM
-                   | LDYA HEX_NUM'''
+                   | LDYA HEX_NUM
+                   | LDYB HEX_NUM'''
     p[0] = (p[1], 'imm', p[2])
 
 # RTS

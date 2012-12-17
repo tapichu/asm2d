@@ -23,6 +23,7 @@ tokens = (
         'LDXA',             # Load game register XA
         'LDXB',             # Load game register XB
         'LDYA',             # Load game register YA
+        'LDYB',             # Load game register YB
         'MAIN',             # .main
         'RTS',              # Return from subroutine
         'STX',              # Store register X
@@ -47,9 +48,11 @@ def t_CONST_IDENTIFIER(t):
     t.value = t.value.upper()
     return t
 
-reserved = ['BEQ', 'BNE', 'BRA', 'CLRS', 'CONST', 'CPK', 'DRHLN', 'DRRCT', \
-        'DRVLN', 'JSR', 'LDB', 'LDD', 'LDG', 'LDK', 'LDR', 'LDX', 'LDXA', \
-        'LDXB', 'LDYA', 'RTS', 'STX', 'SUBD', 'TDXA', 'TDYA', 'VAR']
+reserved = [
+        'BEQ', 'BNE', 'BRA', 'CLRS', 'CONST', 'CPK', 'DRHLN', 'DRRCT',
+        'DRVLN', 'JSR', 'LDB', 'LDD', 'LDG', 'LDK', 'LDR', 'LDX', 'LDXA',
+        'LDXB', 'LDYA', 'LDYB', 'RTS', 'STX', 'SUBD', 'TDXA', 'TDYA','VAR'
+        ]
 
 def t_IDENTIFIER(t):
     r'[A-Za-z][A-Za-z0-9_]*'
