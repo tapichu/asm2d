@@ -20,8 +20,8 @@ def p_element_constant(p):
     p[0] = ('constant', p[1], p[3])
 
 def p_element_variable(p):
-    'element : IDENTIFIER VAR'
-    p[0] = ('variable', p[1])
+    'element : IDENTIFIER VAR NUM'
+    p[0] = ('variable', p[1], p[3])
 
 def p_element_instruction_main(p):
     'element : MAIN instruction'
@@ -36,6 +36,11 @@ def p_element_instruction(p):
     p[0] = ('instruction', '', p[1])
 
 ## Instructions
+
+# ABX
+def p_instruction_abx(p):
+    'instruction : ABX'
+    p[0] = (p[1],)
 
 # BEQ, BNE, BRA
 def p_instruction_branch(p):
@@ -72,7 +77,9 @@ def p_instruction_jsr(p):
 
 # LDB, LDD, LDG, LDK, LDR, LDX, LDXA, LDXB, LDYA, LDYB
 def p_instruction_load_const(p):
-    '''instruction : LDB CONST_IDENTIFIER
+    '''instruction : LDAA CONST_IDENTIFIER
+                   | LDAB CONST_IDENTIFIER
+                   | LDB CONST_IDENTIFIER
                    | LDD CONST_IDENTIFIER
                    | LDG CONST_IDENTIFIER
                    | LDK CONST_IDENTIFIER
@@ -84,8 +91,25 @@ def p_instruction_load_const(p):
                    | LDYB CONST_IDENTIFIER'''
     p[0] = (p[1], 'const', p[2])
 
+def p_instruction_load_var(p):
+    '''instruction : LDAA IDENTIFIER
+                   | LDAB IDENTIFIER
+                   | LDB IDENTIFIER
+                   | LDD IDENTIFIER
+                   | LDG IDENTIFIER
+                   | LDK IDENTIFIER
+                   | LDR IDENTIFIER
+                   | LDX IDENTIFIER
+                   | LDXA IDENTIFIER
+                   | LDXB IDENTIFIER
+                   | LDYA IDENTIFIER
+                   | LDYB IDENTIFIER'''
+    p[0] = (p[1], 'var', p[2])
+
 def p_instruction_load(p):
-    '''instruction : LDB HEX_NUM
+    '''instruction : LDAA HEX_NUM
+                   | LDAB HEX_NUM
+                   | LDB HEX_NUM
                    | LDD HEX_NUM
                    | LDG HEX_NUM
                    | LDK HEX_NUM
@@ -102,9 +126,11 @@ def p_instruction_rts(p):
     'instruction : RTS'
     p[0] = (p[1],)
 
-# STX
-def p_instruction_stx_var(p):
-    'instruction : STX IDENTIFIER'
+# STAA, STAB, STX
+def p_instruction_store_var(p):
+    '''instruction : STAA IDENTIFIER
+                   | STAB IDENTIFIER
+                   | STX IDENTIFIER'''
     p[0] = (p[1], 'var', p[2])
 
 # SUBD

@@ -1,6 +1,7 @@
 # This is a set of regular expressions defining a lexer for our 68HC11 clone.
 
 tokens = (
+        'ABX',              # Add accumulator B to register X
         'BEQ',              # Branch equal zero
         'BNE',              # Branch not equal zero
         'BRA',              # Branch always
@@ -14,6 +15,8 @@ tokens = (
         'HEX_NUM',          # $F0
         'IDENTIFIER',       # FPS_LOOP
         'JSR',              # Jump to subroutine
+        'LDAA',             # Load accumulator A
+        'LDAB',             # Load accumulator B
         'LDB',              # Load colour blue
         'LDD',              # Load double acc D
         'LDG',              # Load colour green
@@ -25,7 +28,10 @@ tokens = (
         'LDYA',             # Load game register YA
         'LDYB',             # Load game register YB
         'MAIN',             # .main
+        'NUM',              # 10, 35, etc.
         'RTS',              # Return from subroutine
+        'STAA',             # Store accumulator A
+        'STAB',             # Store accumulator B
         'STX',              # Store register X
         'SUBD',             # Subtract from double acc D
         'TDXA',             # Transfer to game register XA
@@ -49,9 +55,10 @@ def t_CONST_IDENTIFIER(t):
     return t
 
 reserved = [
-        'BEQ', 'BNE', 'BRA', 'CLRS', 'CONST', 'CPK', 'DRHLN', 'DRRCT',
-        'DRVLN', 'JSR', 'LDB', 'LDD', 'LDG', 'LDK', 'LDR', 'LDX', 'LDXA',
-        'LDXB', 'LDYA', 'LDYB', 'RTS', 'STX', 'SUBD', 'TDXA', 'TDYA','VAR'
+        'ABX', 'BEQ', 'BNE', 'BRA', 'CLRS', 'CONST', 'CPK', 'DRHLN', 'DRRCT',
+        'DRVLN', 'JSR', 'LDAA', 'LDAB', 'LDB', 'LDD', 'LDG', 'LDK', 'LDR',
+        'LDX', 'LDXA', 'LDXB', 'LDYA', 'LDYB', 'RTS', 'STAA', 'STAB', 'STX',
+        'SUBD', 'TDXA', 'TDYA', 'VAR'
         ]
 
 def t_IDENTIFIER(t):
@@ -64,6 +71,11 @@ def t_IDENTIFIER(t):
 def t_HEX_NUM(t):
     r'\$([0-9a-fA-F])+'
     t.value = int(t.value[1:], 16)
+    return t
+
+def t_NUM(t):
+    r'[0-9]+'
+    t.value = int(t.value)
     return t
 
 # Whitespace
