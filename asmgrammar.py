@@ -8,7 +8,10 @@ start = 'asm'
 
 def p_asm(p):
     'asm : element asm'
-    p[0] = [p[1]] + p[2]
+    if p[1] is None:
+        p[0] = p[2]
+    else:
+        p[0] = [p[1]] + p[2]
 def p_asm_empty(p):
     'asm : '
     p[0] = []
@@ -16,24 +19,28 @@ def p_asm_empty(p):
 # Elements
 
 def p_element_constant(p):
-    'element : CONST_IDENTIFIER CONST HEX_NUM'
+    'element : CONST_IDENTIFIER CONST HEX_NUM ENDL'
     p[0] = ('constant', p[1], p[3])
 
 def p_element_variable(p):
-    'element : IDENTIFIER VAR NUM'
+    'element : IDENTIFIER VAR NUM ENDL'
     p[0] = ('variable', p[1], p[3])
 
 def p_element_instruction_main(p):
-    'element : MAIN instruction'
+    'element : MAIN instruction ENDL'
     p[0] = ('instruction', '.main', p[2])
 
 def p_element_instruction_label(p):
-    'element : IDENTIFIER instruction'
+    'element : IDENTIFIER instruction ENDL'
     p[0] = ('instruction', p[1], p[2])
 
 def p_element_instruction(p):
-    'element : instruction'
+    'element : instruction ENDL'
     p[0] = ('instruction', '', p[1])
+
+def p_element_empty(p):
+    'element : ENDL'
+    pass
 
 ## Instructions
 
@@ -45,6 +52,8 @@ def p_instruction_abx(p):
 # BEQ, BNE, BRA
 def p_instruction_branch(p):
     '''instruction : BEQ IDENTIFIER
+                   | BHI IDENTIFIER
+                   | BLO IDENTIFIER
                    | BNE IDENTIFIER
                    | BRA IDENTIFIER'''
     p[0] = (p[1], p[2])
@@ -54,13 +63,15 @@ def p_instruction_clrs(p):
     'instruction : CLRS'
     p[0] = (p[1],)
 
-# CPK
-def p_instruction_cpk_const(p):
-    'instruction : CPK CONST_IDENTIFIER'
+# CPK, CPX
+def p_instruction_compare_const(p):
+    '''instruction : CPK CONST_IDENTIFIER
+                   | CPX CONST_IDENTIFIER'''
     p[0] = (p[1], 'const', p[2])
 
-def p_instruction_cpk(p):
-    'instruction : CPK HEX_NUM'
+def p_instruction_compare(p):
+    '''instruction : CPK HEX_NUM
+                   | CPX HEX_NUM'''
     p[0] = (p[1], 'imm', p[2])
 
 # DRHLN, DRRCT, DRVLN
@@ -121,6 +132,11 @@ def p_instruction_load(p):
                    | LDYA HEX_NUM
                    | LDYB HEX_NUM'''
     p[0] = (p[1], 'imm', p[2])
+
+# NEGA
+def p_instruction_nega(p):
+    'instruction : NEGA'
+    p[0] = (p[1],)
 
 # RTS
 def p_instruction_rts(p):

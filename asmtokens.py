@@ -3,16 +3,20 @@
 tokens = (
         'ABX',              # Add accumulator B to register X
         'BEQ',              # Branch equal zero
+        'BHI',              # Branch if higher
+        'BLO',              # Branch if lower
         'BNE',              # Branch not equal zero
         'BRA',              # Branch always
         'CLRS',             # Clear screen
         'CONST',            # Constant declaration
         'CONST_IDENTIFIER', # .FPS
         'CPK',              # Compare game clock
-        'DRCL'              # Draw circle
+        'CPX',              # Compare register X
+        'DRCL',             # Draw circle
         'DRHLN',            # Draw horizontal line
         'DRRCT',            # Draw rectangle
         'DRVLN',            # Draw vertical line
+        'ENDL',             # Newline
         'HEX_NUM',          # $F0
         'IDENTIFIER',       # FPS_LOOP
         'JSR',              # Jump to subroutine
@@ -29,6 +33,7 @@ tokens = (
         'LDYA',             # Load game register YA
         'LDYB',             # Load game register YB
         'MAIN',             # .main
+        'NEGA',             # 2's complement acc A
         'NUM',              # 10, 35, etc.
         'RTS',              # Return from subroutine
         'STAA',             # Store accumulator A
@@ -56,10 +61,10 @@ def t_CONST_IDENTIFIER(t):
     return t
 
 reserved = [
-        'ABX', 'BEQ', 'BNE', 'BRA', 'CLRS', 'CONST', 'CPK', 'DRCL', 'DRHLN',
-        'DRRCT', 'DRVLN', 'JSR', 'LDAA', 'LDAB', 'LDB', 'LDD', 'LDG', 'LDK',
-        'LDR', 'LDX', 'LDXA', 'LDXB', 'LDYA', 'LDYB', 'RTS', 'STAA', 'STAB',
-        'STX', 'SUBD', 'TDXA', 'TDYA', 'VAR'
+        'ABX', 'BEQ', 'BHI', 'BLO', 'BNE', 'BRA', 'CLRS', 'CONST', 'CPK', 'CPX',
+        'DRCL', 'DRHLN', 'DRRCT', 'DRVLN', 'JSR', 'LDAA', 'LDAB', 'LDB', 'LDD',
+        'LDG', 'LDK', 'LDR', 'LDX', 'LDXA', 'LDXB', 'LDYA', 'LDYB', 'NEGA',
+        'RTS', 'STAA', 'STAB', 'STX', 'SUBD', 'TDXA', 'TDYA', 'VAR'
         ]
 
 def t_IDENTIFIER(t):
@@ -82,9 +87,10 @@ def t_NUM(t):
 # Whitespace
 t_ignore = ' \t\v\r'
 
-def t_newline(t):
+def t_ENDL(t):
     r'\n'
     t.lexer.lineno += 1
+    return t
 
 def t_error(t):
     print "ASM 68HC11 Lexer: Illegal character", t.value[0]
