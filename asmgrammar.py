@@ -65,7 +65,8 @@ def p_instruction_cpk(p):
 
 # DRHLN, DRRCT, DRVLN
 def p_instruction_draw(p):
-    '''instruction : DRHLN
+    '''instruction : DRCL
+                   | DRHLN
                    | DRRCT
                    | DRVLN'''
     p[0] = (p[1],)

@@ -9,6 +9,7 @@ tokens = (
         'CONST',            # Constant declaration
         'CONST_IDENTIFIER', # .FPS
         'CPK',              # Compare game clock
+        'DRCL'              # Draw circle
         'DRHLN',            # Draw horizontal line
         'DRRCT',            # Draw rectangle
         'DRVLN',            # Draw vertical line
@@ -55,10 +56,10 @@ def t_CONST_IDENTIFIER(t):
     return t
 
 reserved = [
-        'ABX', 'BEQ', 'BNE', 'BRA', 'CLRS', 'CONST', 'CPK', 'DRHLN', 'DRRCT',
-        'DRVLN', 'JSR', 'LDAA', 'LDAB', 'LDB', 'LDD', 'LDG', 'LDK', 'LDR',
-        'LDX', 'LDXA', 'LDXB', 'LDYA', 'LDYB', 'RTS', 'STAA', 'STAB', 'STX',
-        'SUBD', 'TDXA', 'TDYA', 'VAR'
+        'ABX', 'BEQ', 'BNE', 'BRA', 'CLRS', 'CONST', 'CPK', 'DRCL', 'DRHLN',
+        'DRRCT', 'DRVLN', 'JSR', 'LDAA', 'LDAB', 'LDB', 'LDD', 'LDG', 'LDK',
+        'LDR', 'LDX', 'LDXA', 'LDXB', 'LDYA', 'LDYB', 'RTS', 'STAA', 'STAB',
+        'STX', 'SUBD', 'TDXA', 'TDYA', 'VAR'
         ]
 
 def t_IDENTIFIER(t):
