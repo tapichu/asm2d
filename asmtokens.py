@@ -1,5 +1,7 @@
 # This is a set of regular expressions defining a lexer for our 68HC11 clone.
 
+from bitstring import BitArray
+
 tokens = (
         'ABX',              # Add accumulator B to register X
         'ADDD',             # Add to accumulator D
@@ -80,7 +82,7 @@ def t_IDENTIFIER(t):
 
 def t_HEX_NUM(t):
     r'\$([0-9a-fA-F])+'
-    t.value = int(t.value[1:], 16)
+    t.value = BitArray(hex="0x" + t.value[1:]).int
     return t
 
 def t_NUM(t):
