@@ -49,6 +49,24 @@ def p_instruction_abx(p):
     'instruction : ABX'
     p[0] = (p[1],)
 
+# ADDD
+def p_instruction_addd_const(p):
+    'instruction : ADDD CONST_IDENTIFIER'
+    p[0] = (p[1], 'const', p[2])
+
+def p_instruction_addd_var(p):
+    'instruction : ADDD IDENTIFIER'
+    p[0] = (p[1], 'var', p[2])
+
+def p_instruction_addd(p):
+    'instruction : ADDD HEX_NUM'
+    p[0] = (p[1], 'imm', p[2])
+
+# ASRD
+def p_instruction_asrd(p):
+    'instruction : ASRD'
+    p[0] = (p[1],)
+
 # BEQ, BNE, BRA
 def p_instruction_branch(p):
     '''instruction : BEQ IDENTIFIER
@@ -147,6 +165,7 @@ def p_instruction_rts(p):
 def p_instruction_store_var(p):
     '''instruction : STAA IDENTIFIER
                    | STAB IDENTIFIER
+                   | STD IDENTIFIER
                    | STX IDENTIFIER'''
     p[0] = (p[1], 'var', p[2])
 

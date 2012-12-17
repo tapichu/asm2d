@@ -2,6 +2,8 @@
 
 tokens = (
         'ABX',              # Add accumulator B to register X
+        'ADDD',             # Add to accumulator D
+        'ASRD',             # Arithmetic shift right D
         'BEQ',              # Branch equal zero
         'BHI',              # Branch if higher
         'BLO',              # Branch if lower
@@ -38,6 +40,7 @@ tokens = (
         'RTS',              # Return from subroutine
         'STAA',             # Store accumulator A
         'STAB',             # Store accumulator B
+        'STD',              # Store accumulator D
         'STX',              # Store register X
         'SUBD',             # Subtract from double acc D
         'TDXA',             # Transfer to game register XA
@@ -61,10 +64,11 @@ def t_CONST_IDENTIFIER(t):
     return t
 
 reserved = [
-        'ABX', 'BEQ', 'BHI', 'BLO', 'BNE', 'BRA', 'CLRS', 'CONST', 'CPK', 'CPX',
-        'DRCL', 'DRHLN', 'DRRCT', 'DRVLN', 'JSR', 'LDAA', 'LDAB', 'LDB', 'LDD',
-        'LDG', 'LDK', 'LDR', 'LDX', 'LDXA', 'LDXB', 'LDYA', 'LDYB', 'NEGA',
-        'RTS', 'STAA', 'STAB', 'STX', 'SUBD', 'TDXA', 'TDYA', 'VAR'
+        'ABX', 'ADDD', 'ASRD', 'BEQ', 'BHI', 'BLO', 'BNE', 'BRA', 'CLRS',
+        'CONST', 'CPK', 'CPX', 'DRCL', 'DRHLN', 'DRRCT', 'DRVLN', 'JSR', 'LDAA',
+        'LDAB', 'LDB', 'LDD', 'LDG', 'LDK', 'LDR', 'LDX', 'LDXA', 'LDXB',
+        'LDYA', 'LDYB', 'NEGA', 'RTS', 'STAA', 'STAB', 'STD', 'STX', 'SUBD',
+        'TDXA', 'TDYA', 'VAR'
         ]
 
 def t_IDENTIFIER(t):
