@@ -1,0 +1,37 @@
+import sys
+import pprint
+import ply.lex as lex
+import ply.yacc as yacc
+import asmtokens
+import asmgrammar
+import asmsemantic
+
+def test_semantic_analysis(input_string):
+    asmlexer = lex.lex(module=asmtokens)
+    asmparser = yacc.yacc(module=asmgrammar, tabmodule="parsetabasm")
+    ast = asmparser.parse(input_string, lexer=asmlexer)
+
+    const_table = {}
+    data_table = {}
+    inst_table = {}
+    asmsemantic.semantic_analysis(ast, const_table, data_table, inst_table)
+    return (const_table, data_table, inst_table)
+
+def main():
+    if len(sys.argv) < 2:
+        print "Usage: asmparser_test.py file_path"
+        sys.exit(1)
+
+    file_name = sys.argv[1]
+    with open(file_name) as f:
+        contents = f.read()
+
+    const_table, data_table, inst_table = test_semantic_analysis(contents)
+
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(const_table)
+    pp.pprint(data_table)
+    pp.pprint(inst_table)
+
+if __name__ == '__main__':
+    main()
