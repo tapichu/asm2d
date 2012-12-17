@@ -7,11 +7,11 @@ from asmtokens import tokens
 start = 'asm'
 
 def p_asm(p):
-    'asm : element asm'
+    'asm : element ENDL asm'
     if p[1] is None:
-        p[0] = p[2]
+        p[0] = p[3]
     else:
-        p[0] = [p[1]] + p[2]
+        p[0] = [p[1]] + p[3]
 def p_asm_empty(p):
     'asm : '
     p[0] = []
@@ -19,27 +19,27 @@ def p_asm_empty(p):
 # Elements
 
 def p_element_constant(p):
-    'element : CONST_IDENTIFIER CONST HEX_NUM ENDL'
+    'element : CONST_IDENTIFIER CONST HEX_NUM'
     p[0] = ('constant', p[1], p[3])
 
 def p_element_variable(p):
-    'element : IDENTIFIER VAR NUM ENDL'
+    'element : IDENTIFIER VAR NUM'
     p[0] = ('variable', p[1], p[3])
 
 def p_element_instruction_main(p):
-    'element : MAIN instruction ENDL'
+    'element : MAIN instruction'
     p[0] = ('instruction', '.main', p[2])
 
 def p_element_instruction_label(p):
-    'element : IDENTIFIER instruction ENDL'
+    'element : IDENTIFIER instruction'
     p[0] = ('instruction', p[1], p[2])
 
 def p_element_instruction(p):
-    'element : instruction ENDL'
+    'element : instruction'
     p[0] = ('instruction', '', p[1])
 
 def p_element_empty(p):
-    'element : ENDL'
+    'element : '
     pass
 
 ## Instructions
