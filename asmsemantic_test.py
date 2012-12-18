@@ -15,7 +15,7 @@ def test_semantic_analysis(input_string):
     data_table = {}
     inst_table = {}
     asmsemantic.semantic_analysis(ast, const_table, data_table, inst_table)
-    return (const_table, data_table, inst_table)
+    return (ast, const_table, data_table, inst_table)
 
 def main():
     if len(sys.argv) < 2:
@@ -26,12 +26,13 @@ def main():
     with open(file_name) as f:
         contents = f.read()
 
-    const_table, data_table, inst_table = test_semantic_analysis(contents)
+    ast, const_table, data_table, inst_table = test_semantic_analysis(contents)
 
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(const_table)
     pp.pprint(data_table)
     pp.pprint(inst_table)
+    pp.pprint(ast)
 
 if __name__ == '__main__':
     main()
