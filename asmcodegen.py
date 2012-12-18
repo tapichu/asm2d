@@ -66,7 +66,7 @@ def codegen(ast, data_table, inst_table, var_name="memory"):
                 if elem.size == 2:
                     codegen_relative(elem, code_offset, inst_table)
                 elif elem.size == 3:
-                    codegen_extended(elem, code_offset)
+                    codegen_extended(elem, code_offset, inst_table)
                 code_offset += elem.size
             elif len(elem.inst) == 4:
                 # TODO
@@ -94,9 +94,16 @@ def codegen_relative(elem, addr, inst_table):
     data = BitArray(int=relative_addr, length=8).bin
     output_data(data, addr, label)
 
-def codegen_extended(elem, addr):
+def codegen_extended(elem, addr, inst_table):
     "Output the memory contents of an extended instruction (3 bytes)."
-    pass
+    inst_name, _, label = elem.inst
+    output_opcode(inst_name, elem.label, addr)
+
+    addr += 1
+    next_addr = inst_table[label]
+    data = BitArray(int=next_addr, length=16).bin
+    output_data(data[:8], addr, label)
+    output_data(data[8:], addr+1, label)
 
 # Helper functions
 
