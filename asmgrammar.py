@@ -4,6 +4,28 @@
 import ply.yacc as yacc
 from asmtokens import tokens
 
+class Const:
+    def __init__(self, id, value):
+        self.id = id
+        self.value = value
+    def __repr__(self):
+        return "Const<Id: '%s', Value: %d>" % (self.id, self.value)
+
+class Var:
+    def __init__(self, id, size):
+        self.id = id
+        self.size = size
+    def __repr__(self):
+        return "Var<Id: '%s', Size: %d>" % (self.id, self.size)
+
+class Inst:
+    def __init__(self, label, inst, size):
+        self.label = label
+        self.inst = inst
+        self.size = size
+    def __repr__(self):
+        return "Inst<Label: '%s', Size: %d, Detail: %s>" % (self.label, self.size, str(self.inst))
+
 start = 'asm'
 
 def p_asm(p):
@@ -20,23 +42,23 @@ def p_asm_empty(p):
 
 def p_element_constant(p):
     'element : CONST_IDENTIFIER CONST HEX_NUM'
-    p[0] = ('constant', p[1], p[3])
+    p[0] = Const(p[1], p[3])
 
 def p_element_variable(p):
     'element : IDENTIFIER VAR NUM'
-    p[0] = ('variable', p[1], p[3])
+    p[0] = Var(p[1], p[3])
 
 def p_element_instruction_main(p):
     'element : MAIN instruction'
-    p[0] = ('instruction', '.main', p[2])
+    p[0] = Inst('.main', p[2], p[2][1])
 
 def p_element_instruction_label(p):
     'element : IDENTIFIER instruction'
-    p[0] = ('instruction', p[1], p[2])
+    p[0] = Inst(p[1], p[2], p[2][1])
 
 def p_element_instruction(p):
     'element : instruction'
-    p[0] = ('instruction', '', p[1])
+    p[0] = Inst('', p[1], p[1][1])
 
 def p_element_empty(p):
     'element : '
@@ -47,25 +69,25 @@ def p_element_empty(p):
 # ABX
 def p_instruction_abx(p):
     'instruction : ABX'
-    p[0] = (p[1],)
+    p[0] = (p[1], 1)
 
 # ADDD
 def p_instruction_addd_const(p):
     'instruction : ADDD CONST_IDENTIFIER'
-    p[0] = (p[1], 'const', p[2])
+    p[0] = (p[1], 3, 'const', p[2])
 
 def p_instruction_addd_var(p):
     'instruction : ADDD IDENTIFIER'
-    p[0] = (p[1], 'var', p[2])
+    p[0] = (p[1], 3, 'var', p[2])
 
 def p_instruction_addd(p):
     'instruction : ADDD HEX_NUM'
-    p[0] = (p[1], 'imm', p[2])
+    p[0] = (p[1], 3, 'imm', p[2])
 
 # ASRD
 def p_instruction_asrd(p):
     'instruction : ASRD'
-    p[0] = (p[1],)
+    p[0] = (p[1], 1)
 
 # BEQ, BNE, BRA
 def p_instruction_branch(p):
@@ -74,23 +96,23 @@ def p_instruction_branch(p):
                    | BLO IDENTIFIER
                    | BNE IDENTIFIER
                    | BRA IDENTIFIER'''
-    p[0] = (p[1], p[2])
+    p[0] = (p[1], 2, p[2])
 
 # CLRS
 def p_instruction_clrs(p):
     'instruction : CLRS'
-    p[0] = (p[1],)
+    p[0] = (p[1], 1)
 
 # CPK, CPX
 def p_instruction_compare_const(p):
     '''instruction : CPK CONST_IDENTIFIER
                    | CPX CONST_IDENTIFIER'''
-    p[0] = (p[1], 'const', p[2])
+    p[0] = (p[1], 3, 'const', p[2])
 
 def p_instruction_compare(p):
     '''instruction : CPK HEX_NUM
                    | CPX HEX_NUM'''
-    p[0] = (p[1], 'imm', p[2])
+    p[0] = (p[1], 3, 'imm', p[2])
 
 # DRHLN, DRRCT, DRVLN
 def p_instruction_draw(p):
@@ -98,12 +120,12 @@ def p_instruction_draw(p):
                    | DRHLN
                    | DRRCT
                    | DRVLN'''
-    p[0] = (p[1],)
+    p[0] = (p[1], 1)
 
 # JSR
 def p_instruction_jsr(p):
     'instruction : JSR IDENTIFIER'
-    p[0] = (p[1], p[2])
+    p[0] = (p[1], 3, p[2])
 
 # LDB, LDD, LDG, LDK, LDR, LDX, LDXA, LDXB, LDYA, LDYB
 def p_instruction_load_const(p):
@@ -119,7 +141,8 @@ def p_instruction_load_const(p):
                    | LDXB CONST_IDENTIFIER
                    | LDYA CONST_IDENTIFIER
                    | LDYB CONST_IDENTIFIER'''
-    p[0] = (p[1], 'const', p[2])
+    size = 2 if p[1] in {'LDAA', 'LDAB', 'LDB', 'LDG', 'LDR'} else 3
+    p[0] = (p[1], size, 'const', p[2])
 
 def p_instruction_load_var(p):
     '''instruction : LDAA IDENTIFIER
@@ -134,7 +157,7 @@ def p_instruction_load_var(p):
                    | LDXB IDENTIFIER
                    | LDYA IDENTIFIER
                    | LDYB IDENTIFIER'''
-    p[0] = (p[1], 'var', p[2])
+    p[0] = (p[1], 3, 'var', p[2])
 
 def p_instruction_load(p):
     '''instruction : LDAA HEX_NUM
@@ -149,17 +172,18 @@ def p_instruction_load(p):
                    | LDXB HEX_NUM
                    | LDYA HEX_NUM
                    | LDYB HEX_NUM'''
-    p[0] = (p[1], 'imm', p[2])
+    size = 2 if p[1] in {'LDAA', 'LDAB', 'LDB', 'LDG', 'LDR'} else 3
+    p[0] = (p[1], size, 'imm', p[2])
 
 # NEGA
 def p_instruction_nega(p):
     'instruction : NEGA'
-    p[0] = (p[1],)
+    p[0] = (p[1], 1)
 
 # RTS
 def p_instruction_rts(p):
     'instruction : RTS'
-    p[0] = (p[1],)
+    p[0] = (p[1], 1)
 
 # STAA, STAB, STX
 def p_instruction_store_var(p):
@@ -167,22 +191,22 @@ def p_instruction_store_var(p):
                    | STAB IDENTIFIER
                    | STD IDENTIFIER
                    | STX IDENTIFIER'''
-    p[0] = (p[1], 'var', p[2])
+    p[0] = (p[1], 3, 'var', p[2])
 
 # SUBD
 def p_instruction_subd_const(p):
     'instruction : SUBD CONST_IDENTIFIER'
-    p[0] = (p[1], 'const', p[2])
+    p[0] = (p[1], 3, 'const', p[2])
 
 def p_instruction_subd(p):
     'instruction : SUBD HEX_NUM'
-    p[0] = (p[1], 'imm', p[2])
+    p[0] = (p[1], 3, 'imm', p[2])
 
 # TDXA, TDYA
 def p_instruction_transfer(p):
     '''instruction : TDXA
                    | TDYA'''
-    p[0] = (p[1],)
+    p[0] = (p[1], 1)
 
 def p_error(p):
     print "ASM Syntax Error: near token %s (line %d)" % (p.type, p.lineno)
