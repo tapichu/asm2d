@@ -36,16 +36,14 @@ OP_CODES = {
         'LDYB': {'imm': 0x00, 'ext': 0x00}, # TODO: assign
         'NEGA': 0x40,
         'RTS': 0x39,
-        'STAA': 0xB7,
-        'STAB': 0xF7,
-        'STD': 0xFD,
-        'STX': 0xFF,
+        'STAA': {'ext': 0xB7},
+        'STAB': {'ext': 0xF7},
+        'STD': {'ext': 0xFD},
+        'STX': {'ext': 0xFF},
         'SUBD': {'imm': 0x83},
         'TDXA': 0x00,       # TODO: assign
         'TDYA': 0x00        # TODO: assign
         }
-
-# memoria(0) := "11111111";
 
 def codegen(ast, data_table, inst_table, var_name="memory"):
     "Generate the memory content as a VHDL matrix."
@@ -73,10 +71,7 @@ def codegen(ast, data_table, inst_table, var_name="memory"):
                 if inst_type == 'imm':
                     codegen_immediate(elem, code_offset)
                 elif inst_type == 'ext':
-                    pass
-                else:
-                    print "ERROR: instruction type not supported %s" % inst_type
-                    exit(1)
+                    codegen_extended(elem, code_offset, inst_table)
                 code_offset += elem.size
 
 def codegen_data(elem, addr, default_value=0):
@@ -84,7 +79,7 @@ def codegen_data(elem, addr, default_value=0):
     value = BitArray(int=default_value, length=elem.size*8).bin
     for i in range(elem.size):
         start, end = i*8, (i+1)*8
-        output_data(value[start:end], addr, elem.id)
+        output_data(value[start:end], addr, comment=elem.id)
         addr += 1
 
 def codegen_inherent(elem, addr):
@@ -104,7 +99,7 @@ def codegen_immediate(elem, addr):
         data = BitArray(int=value, length=(elem.size-1)*8).bin
     for i in range(elem.size-1):
         start, end = i*8, (i+1)*8
-        output_data(data[start:end], addr, value)
+        output_data(data[start:end], addr, comment=value)
         addr += 1
 
 def codegen_relative(elem, addr, inst_table):
@@ -115,18 +110,28 @@ def codegen_relative(elem, addr, inst_table):
     addr += 1
     relative_addr = inst_table[label] - (addr + 1)
     data = BitArray(int=relative_addr, length=8).bin
-    output_data(data, addr, label)
+    output_data(data, addr, comment="%s (rel %d)" % (label, relative_addr))
 
 def codegen_extended(elem, addr, inst_table):
     "Output the memory contents of an extended instruction (3 bytes)."
-    inst_name, _, label = elem.inst
-    output_opcode(inst_name, elem.label, addr)
+    if len(elem.inst) == 3:
+        inst_name, _, label = elem.inst
+        next_addr = inst_table[label]
+        data = BitArray(uint=next_addr, length=16).bin
+        output_opcode(inst_name, elem.label, addr)
 
-    addr += 1
-    next_addr = inst_table[label]
-    data = BitArray(int=next_addr, length=16).bin
-    output_data(data[:8], addr, label)
-    output_data(data[8:], addr+1, label)
+        addr += 1
+        output_data(data[:8], addr, comment="%s (abs %d)" % (label, next_addr))
+        output_data(data[8:], addr+1, comment="%s (abs %d)" % (label, next_addr))
+    elif len(elem.inst) == 4:
+        inst_name, _, inst_type, value = elem.inst
+        data = BitArray(uint=value, length=16).bin
+        opcode = OP_CODES[inst_name][inst_type]
+        output_opcode(inst_name, elem.label, addr, code=opcode)
+
+        addr += 1
+        output_data(data[:8], addr, comment=value)
+        output_data(data[8:], addr+1, comment=value)
 
 # Helper functions
 
