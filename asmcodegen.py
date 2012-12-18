@@ -1,7 +1,9 @@
 # VHDL code gen: generates the memory contents.
 
-from asmgrammar import Const, Inst, Var
+from asmgrammar import Inst, Var
 from bitstring import BitArray
+
+_var_name = 'memory'
 
 OP_CODES = {
         'ABX': 0x3A,
@@ -45,29 +47,43 @@ OP_CODES = {
 
 # memoria(0) := "11111111";
 
-def codegen(ast, data_table, inst_table, matrix_name="memory"):
+def codegen(ast, data_table, inst_table, var_name="memory"):
     "Generate the memory content as a VHDL matrix."
+    global _var_name
+    _var_name = var_name
     data_offset = inst_table['__SIZE']
     code_offset = 0
 
     for elem in ast:
         if isinstance(elem, Var):
-            value = BitArray(int=0, length=elem.size*8).bin
-            for i in range(elem.size):
-                start, end = i*8, (i+1)*8-1
-                print 'memory(%d) := "%s";    // %s' % (data_offset, value[start:end], elem.id)
-                data_offset += 1
+            codegen_data(elem, data_offset)
+            data_offset += elem.size
         elif isinstance(elem, Inst):
             if len(elem.inst) == 2:
-                code = BitArray(uint=OP_CODES[elem.inst[0]], length=8)
-                if elem.label != '':
-                    print 'memory(%d) := "%s";    // %s (%s)' % (code_offset, code.bin, elem.inst[0], elem.label)
-                else:
-                    print 'memory(%d) := "%s";    // %s' % (code_offset, code.bin, elem.inst[0])
-                code_offset += 1
+                codegen_inherent(elem, code_offset)
+                code_offset += elem.size
             elif len(elem.inst) == 3:
                 # TODO
                 pass
             elif len(elem.inst) == 4:
                 # TODO
                 pass
+
+def codegen_data(elem, addr, default_value=0):
+    "Output the initial value of a variable in the data segment."
+    value = BitArray(int=default_value, length=elem.size*8).bin
+    for i in range(elem.size):
+        start, end = i*8, (i+1)*8-1
+        print '%s(%d) := "%s";    // %s' \
+                % (_var_name, addr, value[start:end], elem.id)
+        addr += 1
+
+def codegen_inherent(elem, addr):
+    "Output the memory contents of an inherent instruction (1 byte)."
+    code = BitArray(uint=OP_CODES[elem.inst[0]], length=8)
+    if elem.label != '':
+        print '%s(%d) := "%s";    // %s (%s)' \
+                % (_var_name, addr, code.bin, elem.inst[0], elem.label)
+    else:
+        print '%s(%d) := "%s";    // %s' \
+                % (_var_name, addr, code.bin, elem.inst[0])
