@@ -63,27 +63,54 @@ def codegen(ast, data_table, inst_table, var_name="memory"):
                 codegen_inherent(elem, code_offset)
                 code_offset += elem.size
             elif len(elem.inst) == 3:
-                # TODO
-                pass
+                if elem.size == 2:
+                    codegen_relative(elem, code_offset, inst_table)
+                elif elem.size == 3:
+                    codegen_extended(elem, code_offset)
+                code_offset += elem.size
             elif len(elem.inst) == 4:
                 # TODO
-                pass
+                code_offset += elem.size
 
 def codegen_data(elem, addr, default_value=0):
     "Output the initial value of a variable in the data segment."
     value = BitArray(int=default_value, length=elem.size*8).bin
     for i in range(elem.size):
         start, end = i*8, (i+1)*8-1
-        print '%s(%d) := "%s";    // %s' \
-                % (_var_name, addr, value[start:end], elem.id)
+        output_data(value[start:end], addr, elem.id)
         addr += 1
 
 def codegen_inherent(elem, addr):
     "Output the memory contents of an inherent instruction (1 byte)."
-    code = BitArray(uint=OP_CODES[elem.inst[0]], length=8)
-    if elem.label != '':
-        print '%s(%d) := "%s";    // %s (%s)' \
-                % (_var_name, addr, code.bin, elem.inst[0], elem.label)
-    else:
-        print '%s(%d) := "%s";    // %s' \
-                % (_var_name, addr, code.bin, elem.inst[0])
+    output_opcode(elem.inst[0], elem.label, addr)
+
+def codegen_relative(elem, addr, inst_table):
+    "Output the memory contents of a relative instruction (2 bytes)."
+    inst_name, _, label = elem.inst
+    output_opcode(inst_name, elem.label, addr)
+
+    addr += 1
+    relative_addr = inst_table[label] - (addr + 1)
+    data = BitArray(int=relative_addr, length=8).bin
+    output_data(data, addr, label)
+
+def codegen_extended(elem, addr):
+    "Output the memory contents of an extended instruction (3 bytes)."
+    pass
+
+# Helper functions
+
+def output_opcode(inst_name, label, addr):
+    "Output the memory contents of an instruction op code (1 byte)."
+    op_code = BitArray(uint=OP_CODES[inst_name], length=8)
+    output = '%s(%d) := "%s";    -- %s' % (_var_name, addr, op_code.bin, inst_name)
+    if label != '':
+        output += " (%s)" % label
+    print output
+
+def output_data(data, addr, comment=None):
+    "Output the memory contents of a byte of data."
+    output = '%s(%d) := "%s";' % (_var_name, addr, data)
+    if comment is not None and comment != '':
+        output += '    -- %s' % comment
+    print output
