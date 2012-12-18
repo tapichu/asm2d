@@ -4,25 +4,29 @@ from asmgrammar import Const, Inst, Var
 from bitstring import BitArray
 
 MAIN_ADDR = 0
+SIZE = '__SIZE'
 
 errors = False
 error_no = 0
 
 def semantic_analysis(ast, const_table, data_table, inst_table):
+    "Semantic analysis for the AST."
     global errors, error_no
     errors = False
     error_no = 0
 
-    data = {'data_seg_size': 0, 'code_seg_size': 0}
-    first_pass(ast, const_table, data_table, inst_table, data)
-    second_pass(ast, const_table, data_table, inst_table, data)
-    third_pass(ast, const_table, data_table, inst_table, data)
+    data_table[SIZE] = 0
+    inst_table[SIZE] = 0
+
+    first_pass(ast, const_table, data_table, inst_table)
+    second_pass(ast, const_table, data_table, inst_table)
+    third_pass(ast, const_table, data_table, inst_table)
 
     if errors:
         print "There are %d errors" % error_no
         exit(1)
 
-def first_pass(ast, const_table, data_table, inst_table, data):
+def first_pass(ast, const_table, data_table, inst_table):
     """The first pass of semantic analysis records every constant and variable
     definition, and calculates the size of the code and data segments.
     """
@@ -35,28 +39,28 @@ def first_pass(ast, const_table, data_table, inst_table, data):
             if elem.id in data_table:
                 error("Duplicate name definition: %s", elem.id)
             data_table[elem.id] = -1
-            data['data_seg_size'] += elem.size
+            data_table[SIZE] += elem.size
         elif isinstance(elem, Inst):
             if elem.label != '':
                 if elem.label in inst_table:
                     error("Duplicate label definition: %s", elem.label)
                 inst_table[elem.label] = -1
-            data['code_seg_size'] += elem.size
+            inst_table[SIZE] += elem.size
 
     if '.main' not in inst_table:
         error("Main entry point not defined")
 
-def second_pass(ast, const_table, data_table, inst_table, data):
+def second_pass(ast, const_table, data_table, inst_table):
     """The second pass assigns an address to variables (data segment) and
     labels. It substitutes constant references with their values and checks
     for undefined references.
     """
-    data_offset = 0
+    data_offset = inst_table[SIZE]
     code_offset = 0
 
     for elem in ast:
         if isinstance(elem, Var):
-            data_table[elem.id] = data['code_seg_size'] + data_offset
+            data_table[elem.id] = data_offset
             data_offset += elem.size
         if isinstance(elem, Inst):
             if elem.label != '':
@@ -83,7 +87,7 @@ def second_pass(ast, const_table, data_table, inst_table, data):
     if inst_table['.main'] != MAIN_ADDR:
         error("Main label should be the first instruction")
 
-def third_pass(ast, const_table, data_table, inst_table, data):
+def third_pass(ast, const_table, data_table, inst_table):
     """The third pass handles unsigned values (color registers) and checks that
     immediate values are of the correct size (one or two bytes).
     """

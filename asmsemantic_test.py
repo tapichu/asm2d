@@ -7,19 +7,19 @@ import asmgrammar
 import asmsemantic
 
 def test_semantic_analysis(input_string):
-    asmlexer = lex.lex(module=asmtokens)
-    asmparser = yacc.yacc(module=asmgrammar, tabmodule="parsetabasm")
-    ast = asmparser.parse(input_string, lexer=asmlexer)
-
     const_table = {}
     data_table = {}
     inst_table = {}
+
+    asmlexer = lex.lex(module=asmtokens)
+    asmparser = yacc.yacc(module=asmgrammar, tabmodule="parsetabasm")
+    ast = asmparser.parse(input_string, lexer=asmlexer)
     asmsemantic.semantic_analysis(ast, const_table, data_table, inst_table)
     return (ast, const_table, data_table, inst_table)
 
 def main():
     if len(sys.argv) < 2:
-        print "Usage: asmparser_test.py file_path"
+        print "Usage: asmsemantic_test.py file_path"
         sys.exit(1)
 
     file_name = sys.argv[1]
