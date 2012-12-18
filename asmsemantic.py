@@ -23,7 +23,10 @@ def semantic_analysis(ast, const_table, data_table, inst_table):
     third_pass(ast, const_table, data_table, inst_table)
 
     if errors:
-        print "There are %d errors" % error_no
+        if errors == 1:
+            print "There is 1 error."
+        else:
+            print "There are %d errors." % error_no
         exit(1)
 
 def first_pass(ast, const_table, data_table, inst_table):
@@ -33,17 +36,17 @@ def first_pass(ast, const_table, data_table, inst_table):
     for elem in ast:
         if isinstance(elem, Const):
             if elem.id in const_table:
-                warn("Overriding already defined constant %s", elem.id)
+                warn("Overriding already defined constant %s", elem, elem.id)
             const_table[elem.id] = elem.value
         elif isinstance(elem, Var):
             if elem.id in data_table:
-                error("Duplicate name definition: %s", elem.id)
+                error("Duplicate name definition: %s", elem, elem.id)
             data_table[elem.id] = -1
             data_table[SIZE] += elem.size
         elif isinstance(elem, Inst):
             if elem.label != '':
                 if elem.label in inst_table:
-                    error("Duplicate label definition: %s", elem.label)
+                    error("Duplicate label definition: %s", elem, elem.label)
                 inst_table[elem.label] = -1
             inst_table[SIZE] += elem.size
 
@@ -70,17 +73,17 @@ def second_pass(ast, const_table, data_table, inst_table):
             if len(elem.inst) == 3:
                 name, size, label = elem.inst
                 if label not in inst_table:
-                    error("Undefined label %s", label)
+                    error("Undefined label %s", elem, label)
             elif len(elem.inst) == 4:
                 name, size, inst_type, value = elem.inst
                 if inst_type == 'const':
                     if value not in const_table:
-                        error("Undefined constant %s", value)
+                        error("Undefined constant %s", elem, value)
                     else:
                         elem.inst = (name, size, 'imm', const_table[value])
                 elif inst_type == 'var':
                     if value not in data_table:
-                        error("Undefined variable %s", value)
+                        error("Undefined variable %s", elem, value)
                     else:
                         elem.inst = (name, size, 'ext', data_table[value])
 
@@ -101,23 +104,26 @@ def third_pass(ast, const_table, data_table, inst_table):
                 if inst_type == 'imm':
                     if name in {'LDB', 'LDG', 'LDR'}:
                         if value < 0 or value > 255:
-                            error("Value out of range %s (instruction %s)", value, name)
+                            error("Value out of range %s (instruction %s)", elem, value, name)
                     elif size == 2:
                         if value < -128 or value > 127:
-                            error("Value out of range %s (instruction %s)", value, name)
+                            error("Value out of range %s (instruction %s)", elem, value, name)
                     elif size == 3:
                         if value < -32768 or value > 32767:
-                            error("Value out of range %s (instruction %s)", value, name)
+                            error("Value out of range %s (instruction %s)", elem, value, name)
 
 
-# TODO: line numbers
-def warn(msg, *args):
+def warn(msg, node, *args):
     "Print a warning message."
-    print "WARNING: " + msg % args
+    print "WARNING: %s (at line: %d)" % (msg % args, node.lineno)
 
-def error(msg, *args):
+def error(msg, node=None, *args):
     "Pring an error message, increment the global error count."
     global errors, error_no
     errors = True
     error_no += 1
-    print "ERROR: " + msg % args
+
+    if node is None:
+        print "ERROR: %s" % (msg % args)
+    else:
+        print "ERROR: %s (at line: %d)" % (msg % args, node.lineno)
