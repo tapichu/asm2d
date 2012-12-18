@@ -8,19 +8,19 @@ _var_name = 'memory'
 OP_CODES = {
         'ABX': 0x3A,
         'ADDD': {'imm': 0xC3, 'ext': 0xF3},
-        'ASRD': 0x87,       # TODO: does not exist
+        'ASRD': 0x87,           # TODO: does not exist
         'BEQ': 0x27,
         'BHI': 0x22,
         'BLO': 0x25,
         'BNE': 0x26,
         'BRA': 0x20,
-        'CLRS': 0x00,       # TODO: assign
-        'CPK': 0x00,        # TODO: assign
-        'CPX': 0x8C,
-        'DRCL': 0x00,       # TODO: assign
-        'DRHLN': 0x00,      # TODO: assign
-        'DRRCT': 0x00,      # TODO: assign
-        'DRVLN': 0x00,      # TODO: assign
+        'CLRS': 0x00,           # TODO: assign
+        'CPK': {'imm': 0x00},   # TODO: assign
+        'CPX': {'imm': 0x8C},
+        'DRCL': 0x00,           # TODO: assign
+        'DRHLN': 0x00,          # TODO: assign
+        'DRRCT': 0x00,          # TODO: assign
+        'DRVLN': 0x00,          # TODO: assign
         'JSR': 0xBD,
         'LDAA': {'imm': 0x86, 'ext': 0xB6},
         'LDAB': {'imm': 0xC6, 'ext': 0xF6},
@@ -40,7 +40,7 @@ OP_CODES = {
         'STAB': 0xF7,
         'STD': 0xFD,
         'STX': 0xFF,
-        'SUBD': 0x83,
+        'SUBD': {'imm': 0x83},
         'TDXA': 0x00,       # TODO: assign
         'TDYA': 0x00        # TODO: assign
         }
@@ -69,20 +69,43 @@ def codegen(ast, data_table, inst_table, var_name="memory"):
                     codegen_extended(elem, code_offset, inst_table)
                 code_offset += elem.size
             elif len(elem.inst) == 4:
-                # TODO
+                inst_type = elem.inst[2]
+                if inst_type == 'imm':
+                    codegen_immediate(elem, code_offset)
+                elif inst_type == 'ext':
+                    pass
+                else:
+                    print "ERROR: instruction type not supported %s" % inst_type
+                    exit(1)
                 code_offset += elem.size
 
 def codegen_data(elem, addr, default_value=0):
     "Output the initial value of a variable in the data segment."
     value = BitArray(int=default_value, length=elem.size*8).bin
     for i in range(elem.size):
-        start, end = i*8, (i+1)*8-1
+        start, end = i*8, (i+1)*8
         output_data(value[start:end], addr, elem.id)
         addr += 1
 
 def codegen_inherent(elem, addr):
     "Output the memory contents of an inherent instruction (1 byte)."
     output_opcode(elem.inst[0], elem.label, addr)
+
+def codegen_immediate(elem, addr):
+    "Output the memory contents of an immediate instruction (2 or 3 bytes)."
+    inst_name, _, inst_type, value = elem.inst
+    opcode = OP_CODES[inst_name][inst_type]
+    output_opcode(inst_name, elem.label, addr, code=opcode)
+
+    addr += 1
+    if inst_name in {'LDB', 'LDG', 'LDR'}:
+        data = BitArray(uint=value, length=(elem.size-1)*8).bin
+    else:
+        data = BitArray(int=value, length=(elem.size-1)*8).bin
+    for i in range(elem.size-1):
+        start, end = i*8, (i+1)*8
+        output_data(data[start:end], addr, value)
+        addr += 1
 
 def codegen_relative(elem, addr, inst_table):
     "Output the memory contents of a relative instruction (2 bytes)."
@@ -107,9 +130,10 @@ def codegen_extended(elem, addr, inst_table):
 
 # Helper functions
 
-def output_opcode(inst_name, label, addr):
+def output_opcode(inst_name, label, addr, code=None):
     "Output the memory contents of an instruction op code (1 byte)."
-    op_code = BitArray(uint=OP_CODES[inst_name], length=8)
+    code = OP_CODES[inst_name] if code is None else code
+    op_code = BitArray(uint=code, length=8)
     output = '%s(%d) := "%s";    -- %s' % (_var_name, addr, op_code.bin, inst_name)
     if label != '':
         output += " (%s)" % label
