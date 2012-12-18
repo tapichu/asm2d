@@ -36,7 +36,6 @@ tokens = (
         'LDXB',             # Load game register XB
         'LDYA',             # Load game register YA
         'LDYB',             # Load game register YB
-        'MAIN',             # .main
         'NEGA',             # 2's complement acc A
         'NUM',              # 10, 35, etc.
         'RTS',              # Return from subroutine
@@ -56,13 +55,12 @@ def t_eolcomment(t):
     r'(\#|;).*'
     pass
 
-def t_MAIN(t):
-    r'\.(?:main|MAIN)'
-    return t
-
 def t_CONST_IDENTIFIER(t):
     r'\.[A-Za-z][A-Za-z0-9_]*'
     t.value = t.value.upper()
+    if t.value == '.MAIN':
+        t.type = "IDENTIFIER"
+        t.value = '.main'
     return t
 
 reserved = [
@@ -99,5 +97,5 @@ def t_ENDL(t):
     return t
 
 def t_error(t):
-    print "ASM 68HC11 Lexer: Illegal character", t.value[0]
+    print "ERROR: Illegal character '%s' (at line: %d)" % (t.value[0], t.lexer.lineno)
     t.lexer.skip(1)

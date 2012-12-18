@@ -87,7 +87,7 @@ def second_pass(ast, const_table, data_table, inst_table):
                     else:
                         elem.inst = (name, size, 'ext', data_table[value])
 
-    if inst_table['.main'] != MAIN_ADDR:
+    if '.main' in inst_table and inst_table['.main'] != MAIN_ADDR:
         error("Main label should be the first instruction")
 
 def third_pass(ast, const_table, data_table, inst_table):

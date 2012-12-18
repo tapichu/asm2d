@@ -47,22 +47,33 @@ def p_asm_empty(p):
 def p_element_constant(p):
     'element : CONST_IDENTIFIER CONST HEX_NUM'
     p[0] = Const(p[1], p[3], p.lineno(1))
+def p_element_constant_error(p):
+    'element : CONST_IDENTIFIER error HEX_NUM'
+    print "ERROR: Syntax error in constant declaration %s (at line: %d)" \
+            % (p[1], p.lineno(1))
 
 def p_element_variable(p):
     'element : IDENTIFIER VAR NUM'
     p[0] = Var(p[1], p[3], p.lineno(1))
-
-def p_element_instruction_main(p):
-    'element : MAIN instruction'
-    p[0] = Inst('.main', p[2], p[2][1], p.lineno(1))
+def p_element_variable_error(p):
+    'element : IDENTIFIER error NUM'
+    print "ERROR: Syntax error in variable declaration %s (at line: %d)" \
+            % (p[1], p.lineno(1))
 
 def p_element_instruction_label(p):
     'element : IDENTIFIER instruction'
     p[0] = Inst(p[1], p[2], p[2][1], p.lineno(1))
+def p_element_instruction_label_error(p):
+    'element : IDENTIFIER error'
+    print "ERROR: Syntax error in instruction at label %s (at line: %d)" \
+            % (p[1], p.lineno(1))
 
 def p_element_instruction(p):
     'element : instruction'
     p[0] = Inst('', p[1], p[1][1], p.lineno(1))
+def p_element_instruction_error(p):
+    'element : error'
+    print "ERROR: Syntax error in instruction (at line: %d)" % p.lineno(1)
 
 def p_element_empty(p):
     'element : '
@@ -233,5 +244,5 @@ def p_instruction_transfer(p):
     p.set_lineno(0, p.lineno(1))
 
 def p_error(p):
-    print "ASM Syntax Error: near token %s (line %d)" % (p.type, p.lineno)
-    yacc.errok()
+    value = p.value if p.value != '\n' else 'NEWLINE'
+    print "ERROR: Syntax error near token %s (at line: %d)" % (value, p.lineno)
