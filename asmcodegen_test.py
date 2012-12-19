@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import ply.lex as lex
 import ply.yacc as yacc
@@ -19,7 +20,7 @@ def test_codegen(input_string):
 
 def main():
     if len(sys.argv) < 2:
-        print "Usage: asmcodegen_test.py file_path"
+        print("Usage: asmcodegen_test.py file_path")
         sys.exit(1)
 
     file_name = sys.argv[1]

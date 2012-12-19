@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import ply.lex as lex
 import asmtokens
@@ -14,7 +15,7 @@ def test_lexer(input_string):
 
 def main():
     if len(sys.argv) < 2:
-        print "Usage: asmtokens_test.py file_path"
+        print("Usage: asmtokens_test.py file_path")
         sys.exit(1)
 
     file_name = sys.argv[1]
@@ -23,7 +24,7 @@ def main():
 
     result = test_lexer(contents)
     for pair in result:
-        print pair
+        print(pair)
 
 if __name__ == '__main__':
     main()

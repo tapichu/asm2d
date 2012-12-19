@@ -1,5 +1,7 @@
 # This is a set of regular expressions defining a lexer for our 68HC11 clone.
 
+from __future__ import print_function
+import sys
 from bitstring import BitArray
 
 tokens = (
@@ -97,6 +99,6 @@ def t_ENDL(t):
     return t
 
 def t_error(t):
-    print "ERROR: Illegal character '{0}' (at line: {1:d})"\
-            .format(t.value[0], t.lexer.lineno)
+    print("ERROR: Illegal character '{0}' (at line: {1:d})"\
+            .format(t.value[0], t.lexer.lineno), file=sys.stderr)
     t.lexer.skip(1)

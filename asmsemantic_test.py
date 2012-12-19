@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import pprint
 import ply.lex as lex
@@ -19,7 +20,7 @@ def test_semantic_analysis(input_string):
 
 def main():
     if len(sys.argv) < 2:
-        print "Usage: asmsemantic_test.py file_path"
+        print("Usage: asmsemantic_test.py file_path")
         sys.exit(1)
 
     file_name = sys.argv[1]

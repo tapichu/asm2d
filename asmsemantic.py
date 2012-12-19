@@ -1,7 +1,9 @@
 # Semantic analysis of an AST (parsed 68hc11 assembly code).
 
-from asmgrammar import Const, Inst, Var
+from __future__ import print_function
+import sys
 from bitstring import BitArray
+from asmgrammar import Const, Inst, Var
 
 MAIN_ADDR = 0
 SIZE = '__SIZE'
@@ -24,9 +26,9 @@ def semantic_analysis(ast, const_table, data_table, inst_table):
 
     if errors:
         if error_no == 1:
-            print "There is 1 error."
+            print("There is 1 error.")
         else:
-            print "There are {0:d} errors.".format(error_no)
+            print("There are {0:d} errors.".format(error_no))
         exit(1)
 
 def first_pass(ast, const_table, data_table, inst_table):
@@ -115,7 +117,7 @@ def third_pass(ast, const_table, data_table, inst_table):
 
 def warn(msg, node, *args):
     "Print a warning message."
-    print "WARNING: {0} (at line: {1:d})".format(msg.format(*args), node.lineno)
+    print("WARNING: {0} (at line: {1:d})".format(msg.format(*args), node.lineno))
 
 def error(msg, node=None, *args):
     "Pring an error message, increment the global error count."
@@ -124,6 +126,6 @@ def error(msg, node=None, *args):
     error_no += 1
 
     if node is None:
-        print "ERROR: {}".format(msg.format(*args))
+        print("ERROR: {}".format(msg.format(*args)), file=sys.stderr)
     else:
-        print "ERROR: {0} (at line: {1:d})".format(msg.format(*args), node.lineno)
+        print("ERROR: {0} (at line: {1:d})".format(msg.format(*args), node.lineno), file=sys.stderr)
