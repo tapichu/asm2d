@@ -1,9 +1,12 @@
 # VHDL code gen: generates the memory contents.
 
+from __future__ import print_function
+import sys
 from bitstring import BitArray
 from asmgrammar import Inst, Var
 
 _var_name = 'memory'
+_file = sys.stdout
 
 OP_CODES = {
         'ABX': 0x3A,
@@ -45,10 +48,11 @@ OP_CODES = {
         'TDYA': 0x00        # TODO: assign
         }
 
-def codegen(ast, data_table, inst_table, var_name="memory"):
+def codegen(ast, data_table, inst_table, var_name='memory', outfile=sys.stdout):
     "Generate the memory content as a VHDL matrix."
-    global _var_name
+    global _var_name, _file
     _var_name = var_name
+    _file = outfile
     data_offset = inst_table['__SIZE']
     code_offset = 0
 
@@ -142,11 +146,11 @@ def output_opcode(inst_name, label, addr, code=None):
     output = '{0}({1:d}) := "{2}";    -- {3}'.format(_var_name, addr, op_code.bin, inst_name)
     if label != '':
         output += " ({0})".format(label)
-    print output
+    print(output, file=_file)
 
 def output_data(data, addr, comment=None):
     "Output the memory contents of a byte of data."
     output = '{0}({1:d}) := "{2}";'.format(_var_name, addr, data)
     if comment is not None and comment != '':
         output += '    -- {0}'.format(comment)
-    print output
+    print(output, file=_file)
