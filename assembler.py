@@ -14,15 +14,15 @@ import asmcodegen
 def read_file(filename):
     "Read the contents of a file into memory."
     if not os.path.isfile(filename):
-        print "The file '%s' does not exists." % filename
-        exit(1)
+        print "The file '{}' does not exists.".format(filename)
+        sys.exit(1)
     try:
         with open(filename) as f:
             contents = f.read()
         return contents
     except IOError:
-        print "Error reading file '%s'." % filename
-        exit(1)
+        print "Error reading file '{}'.".format(filename)
+        sys.exit(1)
 
 def compiler(filename, var_name):
     "Run the compiler on the source file."

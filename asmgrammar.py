@@ -10,7 +10,7 @@ class Const:
         self.value = value
         self.lineno = lineno
     def __repr__(self):
-        return "Const<Id: '%s', Value: %d, Line: %d>" % (self.id, self.value, self.lineno)
+        return "Const<Id: '{0}', Value: {1:d}, Line: {2:d}>".format(self.id, self.value, self.lineno)
 
 class Var:
     def __init__(self, id, size, lineno):
@@ -18,7 +18,7 @@ class Var:
         self.size = size
         self.lineno = lineno
     def __repr__(self):
-        return "Var<Id: '%s', Size: %d, Line: %d>" % (self.id, self.size, self.lineno)
+        return "Var<Id: '{0}', Size: {1:d}, Line: {2:d}>".format(self.id, self.size, self.lineno)
 
 class Inst:
     def __init__(self, label, inst, size, lineno):
@@ -27,8 +27,8 @@ class Inst:
         self.size = size
         self.lineno = lineno
     def __repr__(self):
-        return "Inst<Label: '%s', Size: %d, Line: %d, Detail: %s>" \
-                % (self.label, self.size, self.lineno, str(self.inst))
+        return "Inst<Label: '{0}', Size: {1:d}, Line: {2:d}, Detail: {3!r}>"\
+                .format(self.label, self.size, self.lineno, str(self.inst))
 
 start = 'asm'
 
@@ -49,31 +49,31 @@ def p_element_constant(p):
     p[0] = Const(p[1], p[3], p.lineno(1))
 def p_element_constant_error(p):
     'element : CONST_IDENTIFIER error HEX_NUM'
-    print "ERROR: Syntax error in constant declaration %s (at line: %d)" \
-            % (p[1], p.lineno(1))
+    print "ERROR: Syntax error in constant declaration {0} (at line: {1:d})"\
+            .format(p[1], p.lineno(1))
 
 def p_element_variable(p):
     'element : IDENTIFIER VAR NUM'
     p[0] = Var(p[1], p[3], p.lineno(1))
 def p_element_variable_error(p):
     'element : IDENTIFIER error NUM'
-    print "ERROR: Syntax error in variable declaration %s (at line: %d)" \
-            % (p[1], p.lineno(1))
+    print "ERROR: Syntax error in variable declaration {0} (at line: {1:d})" \
+            .format(p[1], p.lineno(1))
 
 def p_element_instruction_label(p):
     'element : IDENTIFIER instruction'
     p[0] = Inst(p[1], p[2], p[2][1], p.lineno(1))
 def p_element_instruction_label_error(p):
     'element : IDENTIFIER error'
-    print "ERROR: Syntax error in instruction at label %s (at line: %d)" \
-            % (p[1], p.lineno(1))
+    print "ERROR: Syntax error in instruction at label {0} (at line: {1:d})" \
+            .format(p[1], p.lineno(1))
 
 def p_element_instruction(p):
     'element : instruction'
     p[0] = Inst('', p[1], p[1][1], p.lineno(1))
 def p_element_instruction_error(p):
     'element : error'
-    print "ERROR: Syntax error in instruction (at line: %d)" % p.lineno(1)
+    print "ERROR: Syntax error in instruction (at line: {0:d})".format(p.lineno(1))
 
 def p_element_empty(p):
     'element : '
@@ -245,4 +245,4 @@ def p_instruction_transfer(p):
 
 def p_error(p):
     value = p.value if p.value != '\n' else 'NEWLINE'
-    print "ERROR: Syntax error near token %s (at line: %d)" % (value, p.lineno)
+    print "ERROR: Syntax error near token {0} (at line: {1:d})".format(value, p.lineno)

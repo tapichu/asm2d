@@ -97,5 +97,6 @@ def t_ENDL(t):
     return t
 
 def t_error(t):
-    print "ERROR: Illegal character '%s' (at line: %d)" % (t.value[0], t.lexer.lineno)
+    print "ERROR: Illegal character '{0}' (at line: {1:d})"\
+            .format(t.value[0], t.lexer.lineno)
     t.lexer.skip(1)

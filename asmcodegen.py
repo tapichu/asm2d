@@ -1,7 +1,7 @@
 # VHDL code gen: generates the memory contents.
 
-from asmgrammar import Inst, Var
 from bitstring import BitArray
+from asmgrammar import Inst, Var
 
 _var_name = 'memory'
 
@@ -110,7 +110,7 @@ def codegen_relative(elem, addr, inst_table):
     addr += 1
     relative_addr = inst_table[label] - (addr + 1)
     data = BitArray(int=relative_addr, length=8).bin
-    output_data(data, addr, comment="%s (rel %d)" % (label, relative_addr))
+    output_data(data, addr, comment="{0} (rel {1:d})".format(label, relative_addr))
 
 def codegen_extended(elem, addr, inst_table):
     "Output the memory contents of an extended instruction (3 bytes)."
@@ -121,8 +121,8 @@ def codegen_extended(elem, addr, inst_table):
         output_opcode(inst_name, elem.label, addr)
 
         addr += 1
-        output_data(data[:8], addr, comment="%s (abs %d)" % (label, next_addr))
-        output_data(data[8:], addr+1, comment="%s (abs %d)" % (label, next_addr))
+        output_data(data[:8], addr, comment="{0} (abs {1:d})".format(label, next_addr))
+        output_data(data[8:], addr+1, comment="{0} (abs {1:d})".format(label, next_addr))
     elif len(elem.inst) == 4:
         inst_name, _, inst_type, value = elem.inst
         data = BitArray(uint=value, length=16).bin
@@ -139,14 +139,14 @@ def output_opcode(inst_name, label, addr, code=None):
     "Output the memory contents of an instruction op code (1 byte)."
     code = OP_CODES[inst_name] if code is None else code
     op_code = BitArray(uint=code, length=8)
-    output = '%s(%d) := "%s";    -- %s' % (_var_name, addr, op_code.bin, inst_name)
+    output = '{0}({1:d}) := "{2}";    -- {3}'.format(_var_name, addr, op_code.bin, inst_name)
     if label != '':
-        output += " (%s)" % label
+        output += " ({0})".format(label)
     print output
 
 def output_data(data, addr, comment=None):
     "Output the memory contents of a byte of data."
-    output = '%s(%d) := "%s";' % (_var_name, addr, data)
+    output = '{0}({1:d}) := "{2}";'.format(_var_name, addr, data)
     if comment is not None and comment != '':
-        output += '    -- %s' % comment
+        output += '    -- {0}'.format(comment)
     print output
