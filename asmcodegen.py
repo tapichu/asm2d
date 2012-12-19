@@ -80,9 +80,9 @@ def codegen(ast, data_table, inst_table, var_name='memory', outfile=sys.stdout):
 
 def codegen_data(elem, addr, default_value=0):
     "Output the initial value of a variable in the data segment."
-    value = BitArray(int=default_value, length=elem.size*8).bin
+    value = BitArray(int=default_value, length=elem.size*8).hex.upper()
     for i in range(elem.size):
-        start, end = i*8, (i+1)*8
+        start, end = i*2, (i+1)*2
         output_data(value[start:end], addr, comment=elem.id)
         addr += 1
 
@@ -98,11 +98,11 @@ def codegen_immediate(elem, addr):
 
     addr += 1
     if inst_name in {'LDB', 'LDG', 'LDR'}:
-        data = BitArray(uint=value, length=(elem.size-1)*8).bin
+        data = BitArray(uint=value, length=(elem.size-1)*8).hex.upper()
     else:
-        data = BitArray(int=value, length=(elem.size-1)*8).bin
+        data = BitArray(int=value, length=(elem.size-1)*8).hex.upper()
     for i in range(elem.size-1):
-        start, end = i*8, (i+1)*8
+        start, end = i*2, (i+1)*2
         output_data(data[start:end], addr, comment=value)
         addr += 1
 
@@ -113,7 +113,7 @@ def codegen_relative(elem, addr, inst_table):
 
     addr += 1
     relative_addr = inst_table[label] - (addr + 1)
-    data = BitArray(int=relative_addr, length=8).bin
+    data = BitArray(int=relative_addr, length=8).hex.upper()
     output_data(data, addr, comment="{0} (rel {1:d})".format(label, relative_addr))
 
 def codegen_extended(elem, addr, inst_table):
@@ -121,36 +121,36 @@ def codegen_extended(elem, addr, inst_table):
     if len(elem.inst) == 3:
         inst_name, _, label = elem.inst
         next_addr = inst_table[label]
-        data = BitArray(uint=next_addr, length=16).bin
+        data = BitArray(uint=next_addr, length=16).hex.upper()
         output_opcode(inst_name, elem.label, addr)
 
         addr += 1
-        output_data(data[:8], addr, comment="{0} (abs {1:d})".format(label, next_addr))
-        output_data(data[8:], addr+1, comment="{0} (abs {1:d})".format(label, next_addr))
+        output_data(data[:2], addr, comment="{0} (abs {1:d})".format(label, next_addr))
+        output_data(data[2:], addr+1, comment="{0} (abs {1:d})".format(label, next_addr))
     elif len(elem.inst) == 4:
         inst_name, _, inst_type, value = elem.inst
-        data = BitArray(uint=value, length=16).bin
+        data = BitArray(uint=value, length=16).hex.upper()
         opcode = OP_CODES[inst_name][inst_type]
         output_opcode(inst_name, elem.label, addr, code=opcode)
 
         addr += 1
-        output_data(data[:8], addr, comment=value)
-        output_data(data[8:], addr+1, comment=value)
+        output_data(data[:2], addr, comment=value)
+        output_data(data[2:], addr+1, comment=value)
 
 # Helper functions
 
 def output_opcode(inst_name, label, addr, code=None):
     "Output the memory contents of an instruction op code (1 byte)."
     code = OP_CODES[inst_name] if code is None else code
-    op_code = BitArray(uint=code, length=8)
-    output = '{0}({1:d}) := "{2}";    -- {3}'.format(_var_name, addr, op_code.bin, inst_name)
+    op_code = BitArray(uint=code, length=8).hex.upper()
+    output = '{0}({1:d}) := X"{2}";    -- {3}'.format(_var_name, addr, op_code, inst_name)
     if label != '':
         output += " ({0})".format(label)
     print(output, file=_file)
 
 def output_data(data, addr, comment=None):
     "Output the memory contents of a byte of data."
-    output = '{0}({1:d}) := "{2}";'.format(_var_name, addr, data)
+    output = '{0}({1:d}) := X"{2}";'.format(_var_name, addr, data)
     if comment is not None and comment != '':
         output += '    -- {0}'.format(comment)
     print(output, file=_file)
