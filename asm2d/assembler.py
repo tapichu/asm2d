@@ -3,6 +3,7 @@
 
 from __future__ import print_function
 import argparse
+import pkg_resources
 import os
 import sys
 import ply.lex as lex
@@ -51,6 +52,8 @@ def main():
             help='the output file')
     parser.add_argument('-n', '--name', default='memory',
             help='the name of the memory variable')
+    version = 'asm2d {}'.format(pkg_resources.require('asm2d')[0].version)
+    parser.add_argument('-v', '--version', action='version', version=version)
     args = parser.parse_args()
 
     output_file = args.output_file
