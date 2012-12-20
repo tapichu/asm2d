@@ -5,7 +5,7 @@ def fread(fname):
     return open(join(dirname(__file__), fname)).read()
 
 setup(name = 'asm2d',
-      version = '0.1',
+      version = '0.1.0',
       description = 'An assembler for the 68112D microprocessor',
       long_description = fread('README.md'),
       url = 'https://github.com/tapichu/asm2d',
