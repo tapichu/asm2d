@@ -1,7 +1,7 @@
 from __future__ import print_function
 import sys
 import ply.lex as lex
-import asmtokens
+import asm2d.asmtokens as asmtokens
 
 def test_lexer(input_string):
     asmlexer = lex.lex(module=asmtokens)

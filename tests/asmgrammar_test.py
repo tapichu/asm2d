@@ -3,8 +3,8 @@ import sys
 import pprint
 import ply.lex as lex
 import ply.yacc as yacc
-import asmtokens
-import asmgrammar
+import asm2d.asmtokens as asmtokens
+import asm2d.asmgrammar as asmgrammar
 
 def test_parser(input_string):
     asmlexer = lex.lex(module=asmtokens)
