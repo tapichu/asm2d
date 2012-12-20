@@ -1,2 +1,0 @@
-ply==3.4
-bitstring==3.0.2
