@@ -1,16 +1,23 @@
-# Extended 68HC11 assembler
+# Assembler for the 68112D microprocessor
 
-Assembler for an extended version of the 68HC11 microcontroller.
+The 68112D is a clone of the 68HC11 microcontroller, with extra instructions
+to generate 2D graphics on a VGA display.
+
+The **asm2d** assembler turns the assembly code into VHDL code to synthesise
+a memory using an array of 8 bit vectors.
 
 ## Installation
 
-* Install [Python](http://python.org/) version 2.7.x.
-* Install [pip](http://www.pip-installer.org/en/latest/).
-    * Installation on [Windows](http://stackoverflow.com/questions/4750806/how-to-install-pip-on-windows).
-* Install the project dependencies:
+Using pip:
 
 ``` bash
-pip install -r requirements.txt
+pip install asm2d
+```
+
+### For development
+
+``` bash
+python setup.py develop
 ```
 
 ## Running
@@ -18,17 +25,18 @@ pip install -r requirements.txt
 Compile a file:
 
 ``` bash
-python assembler.py file.s
+asm2d source.s
 ```
 
-Optionally on a UNIX machine:
+The default output file will have the same name as the source file, but with
+a `.vhd` extension. You can change this with the `-o` flag:
 
-``` bash
-./assembler.py file.s
+```
+asm2d source.s -o memory.vhd
 ```
 
 ### Help
 
 ``` bash
-python assembler.py -h
+asm2d -h
 ```
