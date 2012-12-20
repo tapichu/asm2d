@@ -6,3 +6,4 @@
 * Optimization: 'direct' instructions to save some bytes when the address
   can be specified with one byte.
 * Optimization phase.
+* Find out how to generate parsetab.py file in the install directory.

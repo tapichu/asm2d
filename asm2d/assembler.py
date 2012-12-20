@@ -32,7 +32,7 @@ def compiler(input_file, output_file, var_name):
     inst_table = {}
 
     asmlexer = lex.lex(module=asmtokens)
-    asmparser = yacc.yacc(module=asmgrammar, tabmodule='parsetabasm', debug=0)
+    asmparser = yacc.yacc(module=asmgrammar, write_tables=0, debug=0)
 
     input_string = read_file(input_file)
     ast = asmparser.parse(input_string, lexer=asmlexer)
