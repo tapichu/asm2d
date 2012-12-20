@@ -30,7 +30,6 @@ OP_CODES = {
         'LDB': {'imm': 0x00, 'ext': 0x00},  # TODO: assign
         'LDD': {'imm': 0xCC, 'ext': 0xFC},
         'LDG': {'imm': 0x00, 'ext': 0x00},  # TODO: assign
-        'LDK': {'imm': 0x00, 'ext': 0x00},  # TODO: assign
         'LDR': {'imm': 0x00, 'ext': 0x00},  # TODO: assign
         'LDX': {'imm': 0xCE, 'ext': 0xFE},
         'LDXA': {'imm': 0x00, 'ext': 0x00}, # TODO: assign
@@ -38,6 +37,7 @@ OP_CODES = {
         'LDYA': {'imm': 0x00, 'ext': 0x00}, # TODO: assign
         'LDYB': {'imm': 0x00, 'ext': 0x00}, # TODO: assign
         'NEGA': 0x40,
+        'RSTK': 0x00,       # TODO: assign
         'RTS': 0x39,
         'STAA': {'ext': 0xB7},
         'STAB': {'ext': 0xF7},

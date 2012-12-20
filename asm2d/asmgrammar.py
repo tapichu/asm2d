@@ -7,6 +7,7 @@ import ply.yacc as yacc
 from asmtokens import tokens
 
 class Const:
+    "AST node for a constant."
     def __init__(self, id, value, lineno):
         self.id = id
         self.value = value
@@ -15,6 +16,7 @@ class Const:
         return "Const<Id: '{0}', Value: {1:d}, Line: {2:d}>".format(self.id, self.value, self.lineno)
 
 class Var:
+    "AST node for a variable."
     def __init__(self, id, size, lineno):
         self.id = id
         self.size = size
@@ -23,6 +25,7 @@ class Var:
         return "Var<Id: '{0}', Size: {1:d}, Line: {2:d}>".format(self.id, self.size, self.lineno)
 
 class Inst:
+    "AST node for an instruction."
     def __init__(self, label, inst, size, lineno):
         self.label = label
         self.inst = inst
@@ -152,14 +155,13 @@ def p_instruction_jsr(p):
     p[0] = (p[1], 3, p[2])
     p.set_lineno(0, p.lineno(1))
 
-# LDB, LDD, LDG, LDK, LDR, LDX, LDXA, LDXB, LDYA, LDYB
+# LDB, LDD, LDG, LDR, LDX, LDXA, LDXB, LDYA, LDYB
 def p_instruction_load_const(p):
     '''instruction : LDAA CONST_IDENTIFIER
                    | LDAB CONST_IDENTIFIER
                    | LDB CONST_IDENTIFIER
                    | LDD CONST_IDENTIFIER
                    | LDG CONST_IDENTIFIER
-                   | LDK CONST_IDENTIFIER
                    | LDR CONST_IDENTIFIER
                    | LDX CONST_IDENTIFIER
                    | LDXA CONST_IDENTIFIER
@@ -176,7 +178,6 @@ def p_instruction_load_var(p):
                    | LDB IDENTIFIER
                    | LDD IDENTIFIER
                    | LDG IDENTIFIER
-                   | LDK IDENTIFIER
                    | LDR IDENTIFIER
                    | LDX IDENTIFIER
                    | LDXA IDENTIFIER
@@ -192,7 +193,6 @@ def p_instruction_load(p):
                    | LDB HEX_NUM
                    | LDD HEX_NUM
                    | LDG HEX_NUM
-                   | LDK HEX_NUM
                    | LDR HEX_NUM
                    | LDX HEX_NUM
                    | LDXA HEX_NUM
@@ -206,6 +206,13 @@ def p_instruction_load(p):
 # NEGA
 def p_instruction_nega(p):
     'instruction : NEGA'
+    p[0] = (p[1], 1)
+    p.set_lineno(0, p.lineno(1))
+
+# RSTK
+
+def p_instruction_rstk(p):
+    'instruction : RSTK'
     p[0] = (p[1], 1)
     p.set_lineno(0, p.lineno(1))
 

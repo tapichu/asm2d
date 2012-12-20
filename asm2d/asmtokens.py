@@ -31,7 +31,6 @@ tokens = (
         'LDB',              # Load colour blue
         'LDD',              # Load double acc D
         'LDG',              # Load colour green
-        'LDK',              # Load game clock
         'LDR',              # Load colour red
         'LDX',              # Load register X
         'LDXA',             # Load game register XA
@@ -40,6 +39,7 @@ tokens = (
         'LDYB',             # Load game register YB
         'NEGA',             # 2's complement acc A
         'NUM',              # 10, 35, etc.
+        'RSTK',             # Reset the game clock
         'RTS',              # Return from subroutine
         'STAA',             # Store accumulator A
         'STAB',             # Store accumulator B
@@ -68,8 +68,8 @@ def t_CONST_IDENTIFIER(t):
 reserved = [
         'ABX', 'ADDD', 'ASRD', 'BEQ', 'BHI', 'BLO', 'BNE', 'BRA', 'CLRS',
         'CONST', 'CPK', 'CPX', 'DRCL', 'DRHLN', 'DRRCT', 'DRVLN', 'JSR', 'LDAA',
-        'LDAB', 'LDB', 'LDD', 'LDG', 'LDK', 'LDR', 'LDX', 'LDXA', 'LDXB',
-        'LDYA', 'LDYB', 'NEGA', 'RTS', 'STAA', 'STAB', 'STD', 'STX', 'SUBD',
+        'LDAB', 'LDB', 'LDD', 'LDG', 'LDR', 'LDX', 'LDXA', 'LDXB', 'LDYA',
+        'LDYB', 'NEGA', 'RSTK', 'RTS', 'STAA', 'STAB', 'STD', 'STX', 'SUBD',
         'TDXA', 'TDYA', 'VAR'
         ]
 
