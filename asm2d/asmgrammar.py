@@ -3,7 +3,7 @@
 
 from __future__ import print_function
 import sys
-import ply.yacc as yacc
+from functools import wraps
 from asmtokens import tokens
 
 class Const:
@@ -34,6 +34,20 @@ class Inst:
     def __repr__(self):
         return "Inst<Label: '{0}', Size: {1:d}, Line: {2:d}, Detail: {3!r}>"\
                 .format(self.label, self.size, self.lineno, str(self.inst))
+
+# Helper decorator
+
+def lineno(n):
+    def lineno_decorator(fn):
+        @wraps(fn)
+        def set_lineno(p):
+            """Set the line number of the production using the line number
+            of the nth terminal in the production's body.
+            """
+            p.set_lineno(0, p.lineno(n))
+            return fn(p)
+        return set_lineno
+    return lineno_decorator
 
 start = 'asm'
 
@@ -84,34 +98,35 @@ def p_element_empty(p):
 ## Instructions
 
 # ABX
+@lineno(1)
 def p_instruction_abx(p):
     'instruction : ABX'
     p[0] = (p[1], 1)
-    p.set_lineno(0, p.lineno(1))
 
 # ADDD
+@lineno(1)
 def p_instruction_addd_const(p):
     'instruction : ADDD CONST_IDENTIFIER'
     p[0] = (p[1], 3, 'const', p[2])
-    p.set_lineno(0, p.lineno(1))
 
+@lineno(1)
 def p_instruction_addd_var(p):
     'instruction : ADDD IDENTIFIER'
     p[0] = (p[1], 3, 'var', p[2])
-    p.set_lineno(0, p.lineno(1))
 
+@lineno(1)
 def p_instruction_addd(p):
     'instruction : ADDD HEX_NUM'
     p[0] = (p[1], 3, 'imm', p[2])
-    p.set_lineno(0, p.lineno(1))
 
 # ASRD
+@lineno(1)
 def p_instruction_asrd(p):
     'instruction : ASRD'
     p[0] = (p[1], 1)
-    p.set_lineno(0, p.lineno(1))
 
 # BEQ, BNE, BRA
+@lineno(1)
 def p_instruction_branch(p):
     '''instruction : BEQ IDENTIFIER
                    | BHI IDENTIFIER
@@ -119,43 +134,43 @@ def p_instruction_branch(p):
                    | BNE IDENTIFIER
                    | BRA IDENTIFIER'''
     p[0] = (p[1], 2, p[2])
-    p.set_lineno(0, p.lineno(1))
 
 # CLRS
+@lineno(1)
 def p_instruction_clrs(p):
     'instruction : CLRS'
     p[0] = (p[1], 1)
-    p.set_lineno(0, p.lineno(1))
 
 # CPK, CPX
+@lineno(1)
 def p_instruction_compare_const(p):
     '''instruction : CPK CONST_IDENTIFIER
                    | CPX CONST_IDENTIFIER'''
     p[0] = (p[1], 3, 'const', p[2])
-    p.set_lineno(0, p.lineno(1))
 
+@lineno(1)
 def p_instruction_compare(p):
     '''instruction : CPK HEX_NUM
                    | CPX HEX_NUM'''
     p[0] = (p[1], 3, 'imm', p[2])
-    p.set_lineno(0, p.lineno(1))
 
 # DRHLN, DRRCT, DRVLN
+@lineno(1)
 def p_instruction_draw(p):
     '''instruction : DRCL
                    | DRHLN
                    | DRRCT
                    | DRVLN'''
     p[0] = (p[1], 1)
-    p.set_lineno(0, p.lineno(1))
 
 # JSR
+@lineno(1)
 def p_instruction_jsr(p):
     'instruction : JSR IDENTIFIER'
     p[0] = (p[1], 3, p[2])
-    p.set_lineno(0, p.lineno(1))
 
 # LDB, LDD, LDG, LDR, LDX, LDXA, LDXB, LDYA, LDYB
+@lineno(1)
 def p_instruction_load_const(p):
     '''instruction : LDAA CONST_IDENTIFIER
                    | LDAB CONST_IDENTIFIER
@@ -170,8 +185,8 @@ def p_instruction_load_const(p):
                    | LDYB CONST_IDENTIFIER'''
     size = 2 if p[1] in {'LDAA', 'LDAB', 'LDB', 'LDG', 'LDR'} else 3
     p[0] = (p[1], size, 'const', p[2])
-    p.set_lineno(0, p.lineno(1))
 
+@lineno(1)
 def p_instruction_load_var(p):
     '''instruction : LDAA IDENTIFIER
                    | LDAB IDENTIFIER
@@ -185,8 +200,8 @@ def p_instruction_load_var(p):
                    | LDYA IDENTIFIER
                    | LDYB IDENTIFIER'''
     p[0] = (p[1], 3, 'var', p[2])
-    p.set_lineno(0, p.lineno(1))
 
+@lineno(1)
 def p_instruction_load(p):
     '''instruction : LDAA HEX_NUM
                    | LDAB HEX_NUM
@@ -201,53 +216,51 @@ def p_instruction_load(p):
                    | LDYB HEX_NUM'''
     size = 2 if p[1] in {'LDAA', 'LDAB', 'LDB', 'LDG', 'LDR'} else 3
     p[0] = (p[1], size, 'imm', p[2])
-    p.set_lineno(0, p.lineno(1))
 
 # NEGA
+@lineno(1)
 def p_instruction_nega(p):
     'instruction : NEGA'
     p[0] = (p[1], 1)
-    p.set_lineno(0, p.lineno(1))
 
 # RSTK
-
+@lineno(1)
 def p_instruction_rstk(p):
     'instruction : RSTK'
     p[0] = (p[1], 1)
-    p.set_lineno(0, p.lineno(1))
 
 # RTS
+@lineno(1)
 def p_instruction_rts(p):
     'instruction : RTS'
     p[0] = (p[1], 1)
-    p.set_lineno(0, p.lineno(1))
 
 # STAA, STAB, STX
+@lineno(1)
 def p_instruction_store_var(p):
     '''instruction : STAA IDENTIFIER
                    | STAB IDENTIFIER
                    | STD IDENTIFIER
                    | STX IDENTIFIER'''
     p[0] = (p[1], 3, 'var', p[2])
-    p.set_lineno(0, p.lineno(1))
 
 # SUBD
+@lineno(1)
 def p_instruction_subd_const(p):
     'instruction : SUBD CONST_IDENTIFIER'
     p[0] = (p[1], 3, 'const', p[2])
-    p.set_lineno(0, p.lineno(1))
 
+@lineno(1)
 def p_instruction_subd(p):
     'instruction : SUBD HEX_NUM'
     p[0] = (p[1], 3, 'imm', p[2])
-    p.set_lineno(0, p.lineno(1))
 
 # TDXA, TDYA
+@lineno(1)
 def p_instruction_transfer(p):
     '''instruction : TDXA
                    | TDYA'''
     p[0] = (p[1], 1)
-    p.set_lineno(0, p.lineno(1))
 
 def p_error(p):
     value = p.value if p.value != '\n' else 'NEWLINE'
