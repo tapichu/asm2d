@@ -1,0 +1,8 @@
+* Tests.
+* Documentation.
+* Examples (assembly, vhdl memory).
+* CLI argument to specify the start address.
+* More instructions.
+* Optimization: 'direct' instructions to save some bytes when the address
+  can be specified with one byte.
+* Optimization phase.
