@@ -30,7 +30,7 @@ LABEL   LDX   $00FA
 The first instruction must start with the label `.main` (variables and
 constants may appear before this).
 
-This will be the entry point of the program (mapped to the address 0).
+This will be the entry point of the program (mapped to the 0 address).
 
 ## Data
 
@@ -67,6 +67,6 @@ to instructions. They are declared like this:
 
 For example:
 
-```
+``` asm
 .WIDTH   CONST   $00B3
 ```
