@@ -46,11 +46,11 @@ def main():
     parser = argparse.ArgumentParser(
             description='Assembler for an extended 68HC11 clone.',
             epilog='As private parts to the gods are we, they play with us for their sport.')
-    parser.add_argument('file', help='the source file.')
+    parser.add_argument('file', help='the source file')
     parser.add_argument('-o', '--output-file',
-            help='the name of the output file.')
+            help='the output file')
     parser.add_argument('-n', '--name', default='memory',
-            help='the name of the memory variable.')
+            help='the name of the memory variable')
     args = parser.parse_args()
 
     output_file = args.output_file

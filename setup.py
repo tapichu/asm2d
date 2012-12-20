@@ -14,11 +14,14 @@ setup(name = 'asm2d',
       license = 'BSD',
       packages = ['asm2d'],
       install_requires = ['ply', 'bitstring'],
-      zip_safe = False,
       classifiers = [
           'Development Status :: 3 - Alpha',
           'License :: OSI Approved :: BSD License',
           'Programming Language :: Python :: 2.7',
           'Topic :: Software Development :: Assemblers',
       ],
-      keywords = 'asm2d 6811 68112d assembler')
+      keywords = 'asm2d 6811 68HC11 68112d assembler',
+      entry_points = {
+          'console_scripts': ['asm2d=asm2d.assembler:main'],
+      },
+      zip_safe = False)
