@@ -66,7 +66,7 @@ def p_asm_empty(p):
 # Elements
 
 def p_element_constant(p):
-    'element : CONST_IDENTIFIER CONST HEX_NUM'
+    'element : CONST_IDENTIFIER EQU HEX_NUM'
     p[0] = Const(p[1], p[3], p.lineno(1))
 def p_element_constant_error(p):
     'element : CONST_IDENTIFIER error HEX_NUM'

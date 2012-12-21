@@ -62,11 +62,11 @@ replaced by their memory address:
 to instructions. They are declared like this:
 
 ```
-<constant> ::= .<name> CONST <value>
+<constant> ::= .<name> EQU <value>
 ```
 
 For example:
 
 ``` asm
-.WIDTH   CONST   $00B3
+.WIDTH   EQU   $00B3
 ```

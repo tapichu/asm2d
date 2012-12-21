@@ -16,7 +16,6 @@ tokens = (
         'BNE',              # Branch not equal zero
         'BRA',              # Branch always
         'CLRS',             # Clear screen
-        'CONST',            # Constant declaration
         'CONST_IDENTIFIER', # .FPS
         'CPK',              # Compare game clock
         'CPX',              # Compare register X
@@ -25,6 +24,7 @@ tokens = (
         'DRRCT',            # Draw rectangle
         'DRVLN',            # Draw vertical line
         'ENDL',             # Newline
+        'EQU',              # Equate symbol to a value
         'HEX_NUM',          # $F0
         'IDENTIFIER',       # FPS_LOOP
         'INX',              # Increment register X
