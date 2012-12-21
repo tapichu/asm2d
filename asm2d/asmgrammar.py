@@ -260,6 +260,12 @@ def p_instruction_store_var(p):
                    | STX IDENTIFIER'''
     p[0] = (p[1], 3, 'var', p[2])
 
+# SUBA
+@lineno(1)
+def p_instruction_suba_var(p):
+    'instruction : SUBA IDENTIFIER'
+    p[0] = (p[1], 3, 'var', p[2])
+
 # SUBD
 @lineno(1)
 def p_instruction_subd_const(p):

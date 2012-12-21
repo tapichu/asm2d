@@ -47,6 +47,7 @@ OP_CODES = {
         'STAB': {'ext': 0xF7},
         'STD': {'ext': 0xFD},
         'STX': {'ext': 0xFF},
+        'SUBA': {'ext': 0xB0},
         'SUBD': {'imm': 0x83},
         'TDXA': 0x00,       # TODO: assign
         'TDYA': 0x00        # TODO: assign

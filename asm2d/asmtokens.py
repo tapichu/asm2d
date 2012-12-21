@@ -49,6 +49,7 @@ tokens = (
         'STAB',             # Store accumulator B
         'STD',              # Store accumulator D
         'STX',              # Store register X
+        'SUBA',             # Subtract from accumulator A
         'SUBD',             # Subtract from double acc D
         'TDXA',             # Transfer to game register XA
         'TDYA',             # Transfer to game register YA
