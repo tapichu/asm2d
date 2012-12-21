@@ -53,7 +53,8 @@ tokens = (
         'SUBD',             # Subtract from double acc D
         'TDXA',             # Transfer to game register XA
         'TDYA',             # Transfer to game register YA
-        'VAR'               # Variable declaration
+        'VAR',              # Variable declaration
+        'XGDX'              # Exchange double acc D and register X
         )
 
 states = ()

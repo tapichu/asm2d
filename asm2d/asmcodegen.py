@@ -50,7 +50,8 @@ OP_CODES = {
         'SUBA': {'ext': 0xB0},
         'SUBD': {'imm': 0x83},
         'TDXA': 0x00,       # TODO: assign
-        'TDYA': 0x00        # TODO: assign
+        'TDYA': 0x00,       # TODO: assign
+        'XGDX': 0x8F
         }
 
 def codegen(ast, data_table, inst_table, var_name='memory', outfile=sys.stdout):

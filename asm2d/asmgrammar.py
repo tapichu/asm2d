@@ -284,6 +284,12 @@ def p_instruction_transfer(p):
                    | TDYA'''
     p[0] = (p[1], 1)
 
+# XGDX
+@lineno(1)
+def p_instruction_xgdx(p):
+    'instruction : XGDX'
+    p[0] = (p[1], 1)
+
 def p_error(p):
     value = p.value if p.value != '\n' else 'NEWLINE'
     error("Syntax error near token {0} (at line: {1:d})", value, p.lineno)
