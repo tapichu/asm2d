@@ -73,7 +73,7 @@ def p_element_constant_error(p):
     error("Syntax error in constant declaration {0} (at line: {1:d})", p[1], p.lineno(1))
 
 def p_element_variable(p):
-    'element : IDENTIFIER VAR NUM'
+    'element : IDENTIFIER RMB NUM'
     p[0] = Var(p[1], p[3], p.lineno(1))
 def p_element_variable_error(p):
     'element : IDENTIFIER error NUM'

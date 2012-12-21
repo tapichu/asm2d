@@ -43,6 +43,7 @@ tokens = (
         'MUL',              # Multiply unsigned (AccD = AccA x AccB)
         'NEGA',             # 2's complement acc A
         'NUM',              # 10, 35, etc.
+        'RMB',              # Reserve memory bytes
         'RSTK',             # Reset the game clock
         'RTS',              # Return from subroutine
         'STAA',             # Store accumulator A
@@ -53,7 +54,6 @@ tokens = (
         'SUBD',             # Subtract from double acc D
         'TDXA',             # Transfer to game register XA
         'TDYA',             # Transfer to game register YA
-        'VAR',              # Variable declaration
         'XGDX'              # Exchange double acc D and register X
         )
 

@@ -37,7 +37,7 @@ This will be the entry point of the program (mapped to the 0 address).
 *Variables* in the data section are declared like this:
 
 ```
-<variable> ::= <name> VAR <size>
+<variable> ::= <name> RMB <size>
 ```
 
 Where *size* is the number of bytes.
@@ -45,11 +45,11 @@ Where *size* is the number of bytes.
 For example:
 
 ``` asm
-VAR1   VAR   2
-VAR2   VAR   1
+VAR1   RMB   2
+VAR2   RMB   1
 ```
 
-*Variables* can be used as arguments to instructions and they will be
+*Variables* can be used as arguments to instructions and they'll be
 replaced by their memory address:
 
 ``` asm
