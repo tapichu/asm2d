@@ -99,10 +99,11 @@ def p_element_empty(p):
 
 ## Instructions
 
-# ABX
+# ABA, ABX
 @lineno(1)
-def p_instruction_abx(p):
-    'instruction : ABX'
+def p_instruction_add(p):
+    '''instruction : ABA
+                   | ABX'''
     p[0] = (p[1], 1)
 
 # ADDD

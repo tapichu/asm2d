@@ -9,6 +9,7 @@ _var_name = 'memory'
 _file = sys.stdout
 
 OP_CODES = {
+        'ABA': 0x1B,
         'ABX': 0x3A,
         'ADDD': {'imm': 0xC3, 'ext': 0xF3},
         'ASRD': 0x87,           # TODO: does not exist

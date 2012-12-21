@@ -5,6 +5,7 @@ import sys
 from bitstring import BitArray
 
 tokens = (
+        'ABA',              # Add accumulator B to accumulator A
         'ABX',              # Add accumulator B to register X
         'ADDD',             # Add to accumulator D
         'ASRD',             # Arithmetic shift right D
