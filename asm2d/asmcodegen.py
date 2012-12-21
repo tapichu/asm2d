@@ -26,6 +26,7 @@ OP_CODES = {
         'DRHLN': 0x00,          # TODO: assign
         'DRRCT': 0x00,          # TODO: assign
         'DRVLN': 0x00,          # TODO: assign
+        'INX': 0x08,
         'JSR': 0xBD,
         'LDAA': {'imm': 0x86, 'ext': 0xB6},
         'LDAB': {'imm': 0xC6, 'ext': 0xF6},

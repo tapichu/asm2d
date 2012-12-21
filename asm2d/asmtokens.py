@@ -27,6 +27,7 @@ tokens = (
         'ENDL',             # Newline
         'HEX_NUM',          # $F0
         'IDENTIFIER',       # FPS_LOOP
+        'INX',              # Increment register X
         'JSR',              # Jump to subroutine
         'LDAA',             # Load accumulator A
         'LDAB',             # Load accumulator B

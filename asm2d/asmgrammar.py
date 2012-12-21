@@ -167,6 +167,12 @@ def p_instruction_draw(p):
                    | DRVLN'''
     p[0] = (p[1], 1)
 
+# INX
+@lineno(1)
+def p_instruction_inx(p):
+    'instruction : INX'
+    p[0] = (p[1], 1)
+
 # JSR
 @lineno(1)
 def p_instruction_jsr(p):
