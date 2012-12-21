@@ -8,6 +8,7 @@ tokens = (
         'ABX',              # Add accumulator B to register X
         'ADDD',             # Add to accumulator D
         'ASRD',             # Arithmetic shift right D
+        'BCS',              # Branch if carry set (same as BLO)
         'BEQ',              # Branch equal zero
         'BHI',              # Branch if higher
         'BLO',              # Branch if lower
@@ -65,13 +66,7 @@ def t_CONST_IDENTIFIER(t):
         t.value = '.main'
     return t
 
-reserved = [
-        'ABX', 'ADDD', 'ASRD', 'BEQ', 'BHI', 'BLO', 'BNE', 'BRA', 'CLRS',
-        'CONST', 'CPK', 'CPX', 'DRCL', 'DRHLN', 'DRRCT', 'DRVLN', 'JSR', 'LDAA',
-        'LDAB', 'LDB', 'LDD', 'LDG', 'LDR', 'LDX', 'LDXA', 'LDXB', 'LDYA',
-        'LDYB', 'NEGA', 'RSTK', 'RTS', 'STAA', 'STAB', 'STD', 'STX', 'SUBD',
-        'TDXA', 'TDYA', 'VAR'
-        ]
+reserved = set(tokens) - {'CONST_IDENTIFIER', 'ENDL', 'HEX_NUM', 'IDENTIFIER', 'NUM'}
 
 def t_IDENTIFIER(t):
     r'[A-Za-z][A-Za-z0-9_]*'

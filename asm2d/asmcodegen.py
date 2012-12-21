@@ -12,6 +12,7 @@ OP_CODES = {
         'ABX': 0x3A,
         'ADDD': {'imm': 0xC3, 'ext': 0xF3},
         'ASRD': 0x87,           # TODO: does not exist
+        'BCS': 0x25,
         'BEQ': 0x27,
         'BHI': 0x22,
         'BLO': 0x25,

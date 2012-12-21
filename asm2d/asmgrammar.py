@@ -13,7 +13,8 @@ class Const:
         self.value = value
         self.lineno = lineno
     def __repr__(self):
-        return "Const<Id: '{0}', Value: {1:d}, Line: {2:d}>".format(self.id, self.value, self.lineno)
+        return "Const<Id: '{0}', Value: {1:d}, Line: {2:d}>"\
+                .format(self.id, self.value, self.lineno)
 
 class Var:
     "AST node for a variable."
@@ -22,7 +23,8 @@ class Var:
         self.size = size
         self.lineno = lineno
     def __repr__(self):
-        return "Var<Id: '{0}', Size: {1:d}, Line: {2:d}>".format(self.id, self.size, self.lineno)
+        return "Var<Id: '{0}', Size: {1:d}, Line: {2:d}>"\
+                .format(self.id, self.size, self.lineno)
 
 class Inst:
     "AST node for an instruction."
@@ -125,10 +127,11 @@ def p_instruction_asrd(p):
     'instruction : ASRD'
     p[0] = (p[1], 1)
 
-# BEQ, BNE, BRA
+# BCS, BEQ, BHI, BLO, BNE, BRA
 @lineno(1)
 def p_instruction_branch(p):
-    '''instruction : BEQ IDENTIFIER
+    '''instruction : BCS IDENTIFIER
+                   | BEQ IDENTIFIER
                    | BHI IDENTIFIER
                    | BLO IDENTIFIER
                    | BNE IDENTIFIER
