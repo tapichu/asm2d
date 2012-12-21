@@ -14,7 +14,7 @@ For a full description of the grammar, see `asmgrammar.py`.
 The basic form of an instruction is:
 
 ```
-<instruction> ::= <label> mnemonic <arguments>
+<instruction> ::= <identifier> mnemonic <arguments>
               |   mnemonic <arguments>
 ```
 
@@ -37,7 +37,7 @@ This will be the entry point of the program (mapped to the 0 address).
 *Variables* in the data section are declared like this:
 
 ```
-<variable> ::= <name> RMB <size>
+<variable> ::= <identifier> RMB <size>
 ```
 
 Where *size* is the number of bytes.
@@ -53,7 +53,7 @@ VAR2   RMB   1
 replaced by their memory address:
 
 ``` asm
-     LDX  VAR1
+       LDX  VAR1
 ```
 
 ## Constants
@@ -62,11 +62,17 @@ replaced by their memory address:
 to instructions. They are declared like this:
 
 ```
-<constant> ::= .<name> EQU <value>
+<constant> ::= <identifier> EQU <value>
 ```
 
 For example:
 
 ``` asm
-.WIDTH   EQU   $00B3
+WIDTH   EQU   $00B3
+```
+
+To reference a constant, add a '#' before it's identifier:
+
+``` asm
+        LDX   #WIDTH
 ```

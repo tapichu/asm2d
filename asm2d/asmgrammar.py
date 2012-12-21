@@ -66,10 +66,10 @@ def p_asm_empty(p):
 # Elements
 
 def p_element_constant(p):
-    'element : CONST_IDENTIFIER EQU HEX_NUM'
+    'element : IDENTIFIER EQU HEX_NUM'
     p[0] = Const(p[1], p[3], p.lineno(1))
 def p_element_constant_error(p):
-    'element : CONST_IDENTIFIER error HEX_NUM'
+    'element : IDENTIFIER error HEX_NUM'
     error("Syntax error in constant declaration {0} (at line: {1:d})", p[1], p.lineno(1))
 
 def p_element_variable(p):
@@ -109,7 +109,7 @@ def p_instruction_add(p):
 # ADDD
 @lineno(1)
 def p_instruction_addd_const(p):
-    'instruction : ADDD CONST_IDENTIFIER'
+    'instruction : ADDD CONST_REF'
     p[0] = (p[1], 3, 'const', p[2])
 
 @lineno(1)
@@ -148,8 +148,8 @@ def p_instruction_clrs(p):
 # CPK, CPX
 @lineno(1)
 def p_instruction_compare_const(p):
-    '''instruction : CPK CONST_IDENTIFIER
-                   | CPX CONST_IDENTIFIER'''
+    '''instruction : CPK CONST_REF
+                   | CPX CONST_REF'''
     p[0] = (p[1], 3, 'const', p[2])
 
 @lineno(1)
@@ -182,17 +182,17 @@ def p_instruction_jsr(p):
 # LDB, LDD, LDG, LDR, LDX, LDXA, LDXB, LDYA, LDYB
 @lineno(1)
 def p_instruction_load_const(p):
-    '''instruction : LDAA CONST_IDENTIFIER
-                   | LDAB CONST_IDENTIFIER
-                   | LDB CONST_IDENTIFIER
-                   | LDD CONST_IDENTIFIER
-                   | LDG CONST_IDENTIFIER
-                   | LDR CONST_IDENTIFIER
-                   | LDX CONST_IDENTIFIER
-                   | LDXA CONST_IDENTIFIER
-                   | LDXB CONST_IDENTIFIER
-                   | LDYA CONST_IDENTIFIER
-                   | LDYB CONST_IDENTIFIER'''
+    '''instruction : LDAA CONST_REF
+                   | LDAB CONST_REF
+                   | LDB CONST_REF
+                   | LDD CONST_REF
+                   | LDG CONST_REF
+                   | LDR CONST_REF
+                   | LDX CONST_REF
+                   | LDXA CONST_REF
+                   | LDXB CONST_REF
+                   | LDYA CONST_REF
+                   | LDYB CONST_REF'''
     size = 2 if p[1] in {'LDAA', 'LDAB', 'LDB', 'LDG', 'LDR'} else 3
     p[0] = (p[1], size, 'const', p[2])
 
@@ -269,7 +269,7 @@ def p_instruction_suba_var(p):
 # SUBD
 @lineno(1)
 def p_instruction_subd_const(p):
-    'instruction : SUBD CONST_IDENTIFIER'
+    'instruction : SUBD CONST_REF'
     p[0] = (p[1], 3, 'const', p[2])
 
 @lineno(1)

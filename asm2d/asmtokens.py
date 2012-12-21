@@ -16,7 +16,7 @@ tokens = (
         'BNE',              # Branch not equal zero
         'BRA',              # Branch always
         'CLRS',             # Clear screen
-        'CONST_IDENTIFIER', # .FPS
+        'CONST_REF',        # #CONSTANT
         'CPK',              # Compare game clock
         'CPX',              # Compare register X
         'DRCL',             # Draw circle
@@ -60,18 +60,21 @@ tokens = (
 states = ()
 
 def t_eolcomment(t):
-    r'(\#|;).*'
+    r';.*'
     pass
 
-def t_CONST_IDENTIFIER(t):
-    r'\.[A-Za-z][A-Za-z0-9_]*'
-    t.value = t.value.upper()
-    if t.value == '.MAIN':
-        t.type = "IDENTIFIER"
-        t.value = '.main'
+def t_CONST_REF(t):
+    r'\#[A-Za-z][A-Za-z0-9_]*'
+    t.value = t.value[1:].upper()
     return t
 
-reserved = set(tokens) - {'CONST_IDENTIFIER', 'ENDL', 'HEX_NUM', 'IDENTIFIER', 'NUM'}
+def t_MAIN(t):
+    r'\.main|\.MAIN'
+    t.type = "IDENTIFIER"
+    t.value = '.main'
+    return t
+
+reserved = set(tokens) - {'CONST_REF', 'ENDL', 'HEX_NUM', 'IDENTIFIER', 'NUM'}
 
 def t_IDENTIFIER(t):
     r'[A-Za-z][A-Za-z0-9_]*'
