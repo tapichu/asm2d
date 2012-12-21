@@ -40,6 +40,7 @@ tokens = (
         'LDXB',             # Load game register XB
         'LDYA',             # Load game register YA
         'LDYB',             # Load game register YB
+        'MUL',              # Multiply unsigned (AccD = AccA x AccB)
         'NEGA',             # 2's complement acc A
         'NUM',              # 10, 35, etc.
         'RSTK',             # Reset the game clock

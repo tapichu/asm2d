@@ -39,6 +39,7 @@ OP_CODES = {
         'LDXB': {'imm': 0x00, 'ext': 0x00}, # TODO: assign
         'LDYA': {'imm': 0x00, 'ext': 0x00}, # TODO: assign
         'LDYB': {'imm': 0x00, 'ext': 0x00}, # TODO: assign
+        'MUL': 0x3D,
         'NEGA': 0x40,
         'RSTK': 0x00,       # TODO: assign
         'RTS': 0x39,

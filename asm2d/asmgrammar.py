@@ -227,6 +227,12 @@ def p_instruction_load(p):
     size = 2 if p[1] in {'LDAA', 'LDAB', 'LDB', 'LDG', 'LDR'} else 3
     p[0] = (p[1], size, 'imm', p[2])
 
+# MUL
+@lineno(1)
+def p_instruction_mul(p):
+    'instruction : MUL'
+    p[0] = (p[1], 1)
+
 # NEGA
 @lineno(1)
 def p_instruction_nega(p):
