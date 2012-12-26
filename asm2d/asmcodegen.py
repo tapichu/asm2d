@@ -30,15 +30,15 @@ OP_CODES = {
         'JSR': 0xBD,
         'LDAA': {'imm': 0x86, 'ext': 0xB6},
         'LDAB': {'imm': 0xC6, 'ext': 0xF6},
-        'LDB': {'imm': 0x00, 'ext': 0x00},  # TODO: assign
+        'LDB': {'imm': 0x41, 'ext': 0x51},
         'LDD': {'imm': 0xCC, 'ext': 0xFC},
-        'LDG': {'imm': 0x00, 'ext': 0x00},  # TODO: assign
-        'LDR': {'imm': 0x00, 'ext': 0x00},  # TODO: assign
+        'LDG': {'imm': 0x42, 'ext': 0x52},
+        'LDR': {'imm': 0x45, 'ext': 0x55},
         'LDX': {'imm': 0xCE, 'ext': 0xFE},
-        'LDXA': {'imm': 0x00, 'ext': 0x00}, # TODO: assign
-        'LDXB': {'imm': 0x00, 'ext': 0x00}, # TODO: assign
-        'LDYA': {'imm': 0x00, 'ext': 0x00}, # TODO: assign
-        'LDYB': {'imm': 0x00, 'ext': 0x00}, # TODO: assign
+        'LDXA': {'imm': 0x4B, 'ext': 0x5B},
+        'LDXB': {'imm': 0x4E, 'ext': 0x5E},
+        'LDYA': {'imm': 0x61, 'ext': 0x71},
+        'LDYB': {'imm': 0x62, 'ext': 0x72},
         'MUL': 0x3D,
         'NEGA': 0x40,
         'RSTK': 0x00,       # TODO: assign
