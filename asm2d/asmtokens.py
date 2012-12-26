@@ -52,8 +52,8 @@ tokens = (
         'STX',              # Store register X
         'SUBA',             # Subtract from accumulator A
         'SUBD',             # Subtract from double acc D
-        'TDXA',             # Transfer to game register XA
-        'TDYA',             # Transfer to game register YA
+        'TDXA',             # Transfer double acc D to game register XA
+        'TDYA',             # Transfer double acc D to game register YA
         'XGDX'              # Exchange double acc D and register X
         )
 
