@@ -45,8 +45,8 @@ OP_CODES = {
         'NEGA': 0x40,
         'RSTK': 0xC7,           # Unused opcode (in 6811)
         'RTS': 0x39,
-        'STAA': {'ext': 0xB7},
-        'STAB': {'ext': 0xF7},
+        'STAA': {'ext': 0xB7, 'ind': 0xA7},
+        'STAB': {'ext': 0xF7, 'ind': 0xE7},
         'STD': {'ext': 0xFD},
         'STX': {'ext': 0xFF},
         'SUBA': {'ext': 0xB0},
@@ -84,6 +84,9 @@ def codegen(ast, data_table, inst_table, var_name='memory', outfile=sys.stdout):
                     codegen_immediate(elem, code_offset)
                 elif inst_type == 'ext':
                     codegen_extended(elem, code_offset, inst_table)
+                code_offset += elem.size
+            elif len(elem.inst) == 5:
+                codegen_indexed(elem, code_offset)
                 code_offset += elem.size
 
 def codegen_data(elem, addr, default_value=0):
@@ -123,6 +126,16 @@ def codegen_relative(elem, addr, inst_table):
     relative_addr = inst_table[label] - (addr + 1)
     data = BitArray(int=relative_addr, length=8).hex.upper()
     output_data(data, addr, comment="{0} (rel {1:d})".format(label, relative_addr))
+
+def codegen_indexed(elem, addr):
+    "Output the memory contents of an indexed instruction (2 bytes)."
+    inst_name, _, inst_type, offset, register = elem.inst
+    opcode = OP_CODES[inst_name][inst_type]
+    output_opcode(inst_name, elem.label, addr, code=opcode)
+
+    addr += 1
+    data = BitArray(int=offset, length=8).hex.upper()
+    output_data(data, addr, comment="{0:d},{1}".format(offset, register.upper()))
 
 def codegen_extended(elem, addr, inst_table):
     "Output the memory contents of an extended instruction (3 bytes)."

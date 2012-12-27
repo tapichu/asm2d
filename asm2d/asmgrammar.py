@@ -91,7 +91,7 @@ def p_element_instruction(p):
     p[0] = Inst('', p[1], p[1][1], p.lineno(1))
 def p_element_instruction_error(p):
     'element : error'
-    error("ERROR: Syntax error in instruction (at line: {0:d})", p.lineno(1))
+    error("Syntax error in instruction (at line: {0:d})", p.lineno(1))
 
 def p_element_empty(p):
     'element : '
@@ -252,6 +252,12 @@ def p_instruction_rts(p):
     p[0] = (p[1], 1)
 
 # STAA, STAB, STX
+@lineno(1)
+def p_instruction_store_ind(p):
+    '''instruction : STAA NUM COMMA IX
+                   | STAB NUM COMMA IX'''
+    p[0] = (p[1], 2, 'ind', p[2], 'x')
+
 @lineno(1)
 def p_instruction_store_var(p):
     '''instruction : STAA IDENTIFIER

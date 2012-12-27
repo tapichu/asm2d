@@ -113,6 +113,10 @@ def third_pass(ast, const_table, data_table, inst_table):
                     elif size == 3:
                         if value < -32768 or value > 32767:
                             error("Value out of range {0} (instruction {1})", elem, value, name)
+            elif len(elem.inst) == 5:
+                name, _, _, offset, _ = elem.inst
+                if offset < -128 or offset > 127:
+                    error("Value out of range {0} (instruction {1})", elem, offset, name)
 
 
 def warn(msg, node, *args):

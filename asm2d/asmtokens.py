@@ -16,6 +16,7 @@ tokens = (
         'BNE',              # Branch not equal zero
         'BRA',              # Branch always
         'CLRS',             # Clear screen
+        'COMMA',            # ,
         'CONST_REF',        # #CONSTANT
         'CPK',              # Compare game clock
         'CPX',              # Compare register X
@@ -54,6 +55,7 @@ tokens = (
         'SUBD',             # Subtract from double acc D
         'TDXA',             # Transfer double acc D to game register XA
         'TDYA',             # Transfer double acc D to game register YA
+        'IX',               # Index Register X
         'XGDX'              # Exchange double acc D and register X
         )
 
@@ -62,6 +64,12 @@ states = ()
 def t_eolcomment(t):
     r';.*'
     pass
+
+t_COMMA = r','
+
+def t_IX(t):
+    r'x|X'
+    return t
 
 def t_CONST_REF(t):
     r'\#[A-Za-z][A-Za-z0-9_]*'
@@ -74,7 +82,7 @@ def t_MAIN(t):
     t.value = '.main'
     return t
 
-reserved = set(tokens) - {'CONST_REF', 'ENDL', 'HEX_NUM', 'IDENTIFIER', 'NUM'}
+reserved = set(tokens) - {'COMMA', 'CONST_REF', 'ENDL', 'HEX_NUM', 'IDENTIFIER', 'IX', 'NUM'}
 
 def t_IDENTIFIER(t):
     r'[A-Za-z][A-Za-z0-9_]*'
