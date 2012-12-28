@@ -11,6 +11,8 @@ SIZE = '__SIZE'
 errors = False
 error_no = 0
 
+# TODO: add lineno to error messages
+
 def semantic_analysis(ast, const_table, data_table, inst_table):
     "Semantic analysis for the AST."
     global errors, error_no
@@ -93,14 +95,14 @@ def second_pass(ast, const_table, data_table, inst_table):
         error("Main label should be the first instruction")
 
 def third_pass(ast, const_table, data_table, inst_table):
-    """The third pass handles unsigned values (color registers) and checks that
-    immediate values are of the correct size (one or two bytes).
+    """The third pass handles unsigned values (color registers, fps) and checks
+    that immediate values are of the correct size (one or two bytes).
     """
     for elem in ast:
         if isinstance(elem, Inst):
             if len(elem.inst) == 4:
                 name, size, inst_type, value = elem.inst
-                if name in {'LDB', 'LDG', 'LDR'}:
+                if name in {'CPK', 'LDB', 'LDG', 'LDR'}:
                     if value < -128 or value > 127:
                         error("Value out of range {0} (instruction {1})", elem, value, name)
                     else:

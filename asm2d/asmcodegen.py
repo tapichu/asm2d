@@ -108,7 +108,7 @@ def codegen_immediate(elem, addr):
     output_opcode(inst_name, elem.label, addr, code=opcode)
 
     addr += 1
-    if inst_name in {'LDB', 'LDG', 'LDR'}:
+    if inst_name in {'CPK', 'LDB', 'LDG', 'LDR'}:
         data = BitArray(uint=value, length=(elem.size-1)*8).hex.upper()
     else:
         data = BitArray(int=value, length=(elem.size-1)*8).hex.upper()

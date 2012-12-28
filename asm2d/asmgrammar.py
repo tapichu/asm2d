@@ -150,13 +150,15 @@ def p_instruction_clrs(p):
 def p_instruction_compare_const(p):
     '''instruction : CPK CONST_REF
                    | CPX CONST_REF'''
-    p[0] = (p[1], 3, 'const', p[2])
+    size = 2 if p[1] in {'CPK'} else 3
+    p[0] = (p[1], size, 'const', p[2])
 
 @lineno(1)
 def p_instruction_compare(p):
     '''instruction : CPK HEX_NUM
                    | CPX HEX_NUM'''
-    p[0] = (p[1], 3, 'imm', p[2])
+    size = 2 if p[1] in {'CPK'} else 3
+    p[0] = (p[1], size, 'imm', p[2])
 
 # DRHLN, DRRCT, DRVLN
 @lineno(1)
