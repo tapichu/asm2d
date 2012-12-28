@@ -160,7 +160,7 @@ def p_instruction_compare(p):
     size = 2 if p[1] in {'CPK'} else 3
     p[0] = (p[1], size, 'imm', p[2])
 
-# DRHLN, DRRCT, DRVLN
+# DRCL, DRHLN, DRRCT, DRVLN
 @lineno(1)
 def p_instruction_draw(p):
     '''instruction : DRCL
@@ -168,6 +168,12 @@ def p_instruction_draw(p):
                    | DRRCT
                    | DRVLN'''
     p[0] = (p[1], 1)
+
+# DRSYM
+@lineno(1)
+def p_instruction_draw_symbol(p):
+    'instruction : DRSYM CHAR'
+    p[0] = (p[1], 2, 'imm', p[2])
 
 # INX
 @lineno(1)

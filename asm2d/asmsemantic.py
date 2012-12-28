@@ -108,7 +108,7 @@ def third_pass(ast, const_table, data_table, inst_table):
                     else:
                         value = BitArray(int=value, length=8).uint
                         elem.inst = (name, size, inst_type, value)
-                elif inst_type == 'imm':
+                elif inst_type == 'imm' and name != 'DRSYM':
                     if size == 2:
                         if value < -128 or value > 127:
                             error("Value out of range {0} (instruction {1})", elem, value, name)

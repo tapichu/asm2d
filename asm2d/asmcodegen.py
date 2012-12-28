@@ -27,6 +27,7 @@ OP_CODES = {
         'DRCL': 0x65,           # Unused opcode (in 6811)
         'DRHLN': 0x6B,          # Unused opcode (in 6811)
         'DRRCT': 0x75,          # Unused opcode (in 6811)
+        'DRSYM': {'imm': 0xC5}, # Shadows BITB
         'DRVLN': 0x7B,          # Unused opcode (in 6811)
         'INX': 0x08,
         'JSR': 0xBD,
@@ -55,6 +56,11 @@ OP_CODES = {
         'TDYA': 0xB5,           # Shadows BITA
         'XGDX': 0x8F
         }
+
+SYM_TABLE = {k:BitArray(int=v, length=8).hex.upper()
+        for k,v in zip('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', range(8, 44))}
+SYM_TABLE['@'] = '05'
+SYM_TABLE['#'] = '06'
 
 def codegen(ast, data_table, inst_table, var_name='memory', outfile=sys.stdout):
     "Generate the memory content as a VHDL matrix."
@@ -110,6 +116,8 @@ def codegen_immediate(elem, addr):
     addr += 1
     if inst_name in {'CPK', 'LDB', 'LDG', 'LDR'}:
         data = BitArray(uint=value, length=(elem.size-1)*8).hex.upper()
+    elif inst_name == 'DRSYM':
+        data = SYM_TABLE[value]
     else:
         data = BitArray(int=value, length=(elem.size-1)*8).hex.upper()
     for i in range(elem.size-1):

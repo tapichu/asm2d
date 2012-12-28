@@ -15,6 +15,7 @@ tokens = (
         'BLO',              # Branch if lower
         'BNE',              # Branch not equal zero
         'BRA',              # Branch always
+        'CHAR',             # 'A', '1', etc.
         'CLRS',             # Clear screen
         'COMMA',            # ,
         'CONST_REF',        # #CONSTANT
@@ -23,12 +24,14 @@ tokens = (
         'DRCL',             # Draw circle
         'DRHLN',            # Draw horizontal line
         'DRRCT',            # Draw rectangle
+        'DRSYM',            # Draw symbol
         'DRVLN',            # Draw vertical line
         'ENDL',             # Newline
         'EQU',              # Equate symbol to a value
         'HEX_NUM',          # $F0
         'IDENTIFIER',       # FPS_LOOP
         'INX',              # Increment register X
+        'IX',               # Index Register X
         'JSR',              # Jump to subroutine
         'LDAA',             # Load accumulator A
         'LDAB',             # Load accumulator B
@@ -55,7 +58,6 @@ tokens = (
         'SUBD',             # Subtract from double acc D
         'TDXA',             # Transfer double acc D to game register XA
         'TDYA',             # Transfer double acc D to game register YA
-        'IX',               # Index Register X
         'XGDX'              # Exchange double acc D and register X
         )
 
@@ -66,6 +68,11 @@ def t_eolcomment(t):
     pass
 
 t_COMMA = r','
+
+def t_CHAR(t):
+    r"'[A-Z0-9#@]'"
+    t.value = t.value[1]
+    return t
 
 def t_IX(t):
     r'x|X'
@@ -82,7 +89,8 @@ def t_MAIN(t):
     t.value = '.main'
     return t
 
-reserved = set(tokens) - {'COMMA', 'CONST_REF', 'ENDL', 'HEX_NUM', 'IDENTIFIER', 'IX', 'NUM'}
+reserved = set(tokens) - {'CHAR', 'COMMA', 'CONST_REF', 'ENDL', 'HEX_NUM',\
+        'IDENTIFIER', 'IX', 'NUM'}
 
 def t_IDENTIFIER(t):
     r'[A-Za-z][A-Za-z0-9_]*'
