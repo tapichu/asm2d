@@ -1,12 +1,12 @@
-# VHDL code gen: generates the memory contents.
+# Outputs the memory contents in .mif (Memory Initialization File) format.
 
 from __future__ import print_function
 import sys
 from bitstring import BitArray
 from asmgrammar import Inst, Var
 
-_var_name = 'memory'
 _file = sys.stdout
+SIZE = '__SIZE'
 
 # http://home.earthlink.net/~tdickens/68hc11/68hc11_opcode_map.html
 
@@ -62,19 +62,19 @@ SYM_TABLE = {k:BitArray(int=v, length=8).hex.upper()
 SYM_TABLE['@'] = '05'
 SYM_TABLE['#'] = '06'
 
-def codegen(ast, data_table, inst_table, var_name='memory', outfile=sys.stdout):
+def codegen(ast, data_table, inst_table, no_words=None, outfile=sys.stdout):
     "Generate the memory content as a VHDL matrix."
-    global _var_name, _file
-    _var_name = var_name
+    global _file
     _file = outfile
-    data_offset = inst_table['__SIZE']
+    mem_size = inst_table[SIZE] + data_table[SIZE]
+    data_offset = inst_table[SIZE]
     code_offset = 0
 
+    if not no_words: no_words = mem_size
+    output_mif_header(no_words)
+
     for elem in ast:
-        if isinstance(elem, Var):
-            codegen_data(elem, data_offset)
-            data_offset += elem.size
-        elif isinstance(elem, Inst):
+        if isinstance(elem, Inst):
             if len(elem.inst) == 2:
                 codegen_inherent(elem, code_offset)
                 code_offset += elem.size
@@ -94,6 +94,13 @@ def codegen(ast, data_table, inst_table, var_name='memory', outfile=sys.stdout):
             elif len(elem.inst) == 5:
                 codegen_indexed(elem, code_offset)
                 code_offset += elem.size
+
+    for elem in ast:
+        if isinstance(elem, Var):
+            codegen_data(elem, data_offset)
+            data_offset += elem.size
+
+    output_mif_footer(no_words, mem_size, data_offset)
 
 def codegen_data(elem, addr, default_value=0):
     "Output the initial value of a variable in the data segment."
@@ -172,14 +179,33 @@ def output_opcode(inst_name, label, addr, code=None):
     "Output the memory contents of an instruction op code (1 byte)."
     code = OP_CODES[inst_name] if code is None else code
     op_code = BitArray(uint=code, length=8).hex.upper()
-    output = '{0}({1:d}) := X"{2}";    -- {3}'.format(_var_name, addr, op_code, inst_name)
+    addr_hex = BitArray(int=addr, length=16).hex.upper()
+    output = '{0} : {1};    -- {2}'.format(addr_hex, op_code, inst_name)
     if label != '':
         output += " ({0})".format(label)
     print(output, file=_file)
 
 def output_data(data, addr, comment=None):
     "Output the memory contents of a byte of data."
-    output = '{0}({1:d}) := X"{2}";'.format(_var_name, addr, data)
+    addr_hex = BitArray(int=addr, length=16).hex.upper()
+    output = '{0} : {1};'.format(addr_hex, data)
     if comment is not None and comment != '':
         output += '    -- {0}'.format(comment)
     print(output, file=_file)
+
+def output_mif_header(depth, width=8, addr_radix='HEX', data_radix='HEX'):
+    "Output the header of a MIF file."
+    print('DEPTH = {0:d};\t\t\t-- Size of memory in words'.format(depth), file=_file)
+    print('WIDTH = {0:d};\t\t\t\t-- Size of word in bits'.format(width), file=_file)
+    print('ADDRESS_RADIX = {0};\t-- Radix for address values'.format(addr_radix), file=_file)
+    print('DATA_RADIX = {0};\t\t-- Radix for data values'.format(data_radix), file=_file)
+    print('CONTENT', file=_file)
+    print('BEGIN\n', file=_file)
+
+def output_mif_footer(depth, mem_size, next_addr):
+    "Output the footer of a MIF file."
+    if depth > mem_size:
+        start_addr = BitArray(int=next_addr, length=16).hex.upper()
+        end_addr = BitArray(int=depth-1, length=16).hex.upper()
+        print('\n[{0}..{1}] : {2};'.format(start_addr, end_addr, '00'), file=_file)
+    print('\nEND;', file=_file)

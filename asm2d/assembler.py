@@ -26,7 +26,7 @@ def read_file(filename):
         print("Error reading file '{}'.".format(filename), file=sys.stderr)
         sys.exit(1)
 
-def compiler(input_file, output_file, var_name):
+def run_compiler(input_file, output_file, no_words):
     "Run the compiler on the source file."
     const_table = {}
     data_table = {}
@@ -40,7 +40,7 @@ def compiler(input_file, output_file, var_name):
     asmsemantic.semantic_analysis(ast, const_table, data_table, inst_table)
 
     with open(output_file, 'w+') as f:
-        asmcodegen.codegen(ast, data_table, inst_table, var_name=var_name, outfile=f)
+        asmcodegen.codegen(ast, data_table, inst_table, no_words=no_words, outfile=f)
 
 def main():
     "Parse the command line arguments and invoke the compiler."
@@ -50,8 +50,8 @@ def main():
     parser.add_argument('file', help='the source file')
     parser.add_argument('-o', '--output-file',
             help='the output file')
-    parser.add_argument('-n', '--name', default='memory',
-            help='the name of the memory variable')
+    parser.add_argument('-w', '--words', type=int, default=None,
+            help='the number of words in the memory')
     version = 'asm2d {}'.format(pkg_resources.require('asm2d')[0].version)
     parser.add_argument('-v', '--version', action='version', version=version)
     args = parser.parse_args()
@@ -59,9 +59,9 @@ def main():
     output_file = args.output_file
     if output_file is None:
         filename, ext = os.path.splitext(args.file)
-        output_file = filename + '.vhd'
+        output_file = filename + '.mif'
 
-    compiler(args.file, output_file, args.name)
+    run_compiler(args.file, output_file, args.words)
 
 if __name__ == '__main__':
     main()
