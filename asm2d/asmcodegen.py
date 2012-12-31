@@ -1,11 +1,13 @@
 # Outputs the memory contents in .mif (Memory Initialization File) format.
 
 from __future__ import print_function
+import math
 import sys
 from bitstring import BitArray
 from asmgrammar import Inst, Var
 
 _file = sys.stdout
+_addr_bits = 0
 SIZE = '__SIZE'
 
 # http://home.earthlink.net/~tdickens/68hc11/68hc11_opcode_map.html
@@ -71,6 +73,8 @@ def codegen(ast, data_table, inst_table, no_words=None, outfile=sys.stdout):
     code_offset = 0
 
     if not no_words: no_words = mem_size
+    calculate_addr_bits(no_words)
+
     output_mif_header(no_words)
 
     for elem in ast:
@@ -175,11 +179,18 @@ def codegen_extended(elem, addr, inst_table):
 
 # Helper functions
 
+def calculate_addr_bits(depth):
+    """Calculate the number of bits (in multiples of 4) needed to address the
+    specified number of words.
+    """
+    global _addr_bits
+    _addr_bits = int(math.ceil(math.log(depth, 2) / 4)) * 4
+
 def output_opcode(inst_name, label, addr, code=None):
     "Output the memory contents of an instruction op code (1 byte)."
     code = OP_CODES[inst_name] if code is None else code
     op_code = BitArray(uint=code, length=8).hex.upper()
-    addr_hex = BitArray(uint=addr, length=16).hex.upper()
+    addr_hex = BitArray(uint=addr, length=_addr_bits).hex.upper()
     output = '{0} : {1};    -- {2}'.format(addr_hex, op_code, inst_name)
     if label != '':
         output += " ({0})".format(label)
@@ -187,7 +198,7 @@ def output_opcode(inst_name, label, addr, code=None):
 
 def output_data(data, addr, comment=None):
     "Output the memory contents of a byte of data."
-    addr_hex = BitArray(uint=addr, length=16).hex.upper()
+    addr_hex = BitArray(uint=addr, length=_addr_bits).hex.upper()
     output = '{0} : {1};'.format(addr_hex, data)
     if comment is not None and comment != '':
         output += '    -- {0}'.format(comment)
@@ -205,7 +216,7 @@ def output_mif_header(depth, width=8, addr_radix='HEX', data_radix='HEX'):
 def output_mif_footer(depth, mem_size, next_addr):
     "Output the footer of a MIF file."
     if depth > mem_size:
-        start_addr = BitArray(uint=next_addr, length=16).hex.upper()
-        end_addr = BitArray(uint=depth-1, length=16).hex.upper()
+        start_addr = BitArray(uint=next_addr, length=_addr_bits).hex.upper()
+        end_addr = BitArray(uint=depth-1, length=_addr_bits).hex.upper()
         print('\n[{0}..{1}] : {2};'.format(start_addr, end_addr, '00'), file=_file)
     print('\nEND;', file=_file)
