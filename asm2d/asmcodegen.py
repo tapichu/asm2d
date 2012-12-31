@@ -179,7 +179,7 @@ def output_opcode(inst_name, label, addr, code=None):
     "Output the memory contents of an instruction op code (1 byte)."
     code = OP_CODES[inst_name] if code is None else code
     op_code = BitArray(uint=code, length=8).hex.upper()
-    addr_hex = BitArray(int=addr, length=16).hex.upper()
+    addr_hex = BitArray(uint=addr, length=16).hex.upper()
     output = '{0} : {1};    -- {2}'.format(addr_hex, op_code, inst_name)
     if label != '':
         output += " ({0})".format(label)
@@ -187,7 +187,7 @@ def output_opcode(inst_name, label, addr, code=None):
 
 def output_data(data, addr, comment=None):
     "Output the memory contents of a byte of data."
-    addr_hex = BitArray(int=addr, length=16).hex.upper()
+    addr_hex = BitArray(uint=addr, length=16).hex.upper()
     output = '{0} : {1};'.format(addr_hex, data)
     if comment is not None and comment != '':
         output += '    -- {0}'.format(comment)
@@ -205,7 +205,7 @@ def output_mif_header(depth, width=8, addr_radix='HEX', data_radix='HEX'):
 def output_mif_footer(depth, mem_size, next_addr):
     "Output the footer of a MIF file."
     if depth > mem_size:
-        start_addr = BitArray(int=next_addr, length=16).hex.upper()
-        end_addr = BitArray(int=depth-1, length=16).hex.upper()
+        start_addr = BitArray(uint=next_addr, length=16).hex.upper()
+        end_addr = BitArray(uint=depth-1, length=16).hex.upper()
         print('\n[{0}..{1}] : {2};'.format(start_addr, end_addr, '00'), file=_file)
     print('\nEND;', file=_file)
