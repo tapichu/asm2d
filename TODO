@@ -1,9 +1,6 @@
 * Tests.
 * Documentation.
-* Examples (assembly, vhdl memory).
 * CLI argument to specify the start address.
-* CLI arguments for the word size and address size (or infer the address
-  size from the number of words in memory).
 * More instructions.
 * Optimization: 'direct' instructions to save some bytes when the address
   can be specified with one byte.

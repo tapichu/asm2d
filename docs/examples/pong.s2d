@@ -1,0 +1,231 @@
+;*******************************************************************************
+; Pong implementation
+;*******************************************************************************
+
+; Constants
+
+FPS                 EQU       $1E         ; 30
+
+WIN_WIDTH           EQU       $0280       ; 640
+WIN_WIDTH_HALF      EQU       $0140       ; 320 WIN_WIDTH / 2
+WIN_HEIGHT          EQU       $01E0       ; 480
+WIN_HEIGHT_HALF     EQU       $00F0       ; 240 WIN_HEIGHT / 2
+WIN_HEIGHT_WALLS    EQU       $01C2       ; 450 WIN_HEIGHT - 2 * WALL_TOP
+
+CELL_SIZE           EQU       $20         ; 32
+CELL_WIDTH          EQU       $14         ; 20 WIN_WIDTH / CELL_SIZE
+CELL_HEIGHT         EQU       $0F         ; 15 WIN_HEIGHT / CELL_SIZE
+
+WALL_TOP            EQU       $000F       ;  15
+WALL_TOP_RADIUS     EQU       $0012       ;  18 WALL_TOP + BALL_RADIUS
+WALL_BOTTOM         EQU       $01D1       ; 465 WIN_HEIGHT - WALL_TOP
+WALL_BOTTOM_RADIUS  EQU       $01CE       ; 462 WALL_BOTTOM - BALL_RADIUS
+
+EXIT_LEFT           EQU       $FFF7       ; -9 (-3 * BALL_RADIUS)
+EXIT_RIGHT          EQU       $0289       ; 649 (WIN_WIDTH + 3 * BALL_RADIUS)
+
+PAD_HEIGHT          EQU       $003C       ;  60
+PAD_WIDTH           EQU       $000F       ;  14 
+PAD_INIT_Y          EQU       $00D2       ; 210 WIN_HEIGHT / 2 - PAD_HEIGHT / 2
+PAD_SPEED           EQU       $001E       ;  30
+
+P1_PAD_X            EQU       $0019       ;  25 CELL_SIZE - PAD_WIDTH / 2
+CPU_PAD_X           EQU       $0259       ; 601 WIN_WIDTH - CELL_SIZE - PAD_WIDTH / 2
+
+BALL_RADIUS         EQU       $03         ;  3
+INIT_SPEED          EQU       $0F         ; 15
+
+; Variables
+
+P1_PAD_Y            RMB       2           ; Two bytes
+CPU_PAD_Y           RMB       2           ; Two bytes
+
+BALL_X              RMB       2           ; Two bytes
+BALL_Y              RMB       2           ; Two bytes
+
+SPEED_X             RMB       1           ; One byte
+SPEED_Y             RMB       1           ; One byte
+
+COLL_COUNT          RMB       1           ; One byte
+
+; Main
+
+.main               LDX       #PAD_INIT_Y
+                    STX       P1_PAD_Y
+                    STX       CPU_PAD_Y
+
+                    JSR       START_GAME
+                    RSTK                        ; reset the game clock
+
+MAIN_LOOP           JSR       DRAW_GRID
+                    JSR       DRAW_BALL
+                    JSR       DRAW_PAD
+                    JSR       DRAW_WALLS
+
+FPS_LOOP            CPK       #FPS              ; compare game clock
+                    BNE       FPS_LOOP
+                    RSTK                        ; reset the game clock
+
+                    BRA       MAIN_LOOP
+; End MAIN
+
+; Subrutinas
+
+; Set the ball in it's starting position
+START_GAME          LDX       #WIN_WIDTH_HALF
+                    STX       BALL_X
+                    LDX       #WIN_HEIGHT_HALF
+                    STX       BALL_Y
+
+                    LDAA      $08               ; 6 TODO: randomize
+                    STAA      SPEED_X
+                    LDAA      $07               ; 4 TODO: INIT_SPEED - SPEED_X
+                    STAA      SPEED_Y
+
+                    LDX       $0000
+                    STX       COLL_COUNT
+                    RTS                         ; Return from subroutine
+; End START_GAME
+
+
+DRAW_GRID           CLRS                        ; clear the screen
+
+                    LDR       $01               ; Gray
+                    LDG       $01
+                    LDB       $01
+
+; Vertical lines draw.line((x, 0), (x, WIN_HEIGHT))
+                    LDYA      #WALL_TOP
+                    LDXB      #WIN_HEIGHT_WALLS ; line width
+                    LDD       #WIN_WIDTH
+DG_LOOP_V           BEQ       DG_LOOP_V_DONE
+                    TDXA                        ; Transfer register D to XA
+                    DRVLN                       ; Draw vertical line
+                    SUBD      #CELL_SIZE
+                    BRA       DG_LOOP_V
+
+; Horizontal lines draw.line((0, y), (WIN_WIDTH, y))
+DG_LOOP_V_DONE      LDXA      $0000
+                    LDXB      #WIN_WIDTH        ; line width
+                    LDD       #WIN_HEIGHT
+DG_LOOP_H           BEQ       DG_LOOP_H_DONE
+                    TDYA                        ; Transfer register D to YA
+                    DRHLN
+                    SUBD      #CELL_SIZE
+                    BRA       DG_LOOP_H
+DG_LOOP_H_DONE      RTS
+; End DRAW_GRID
+
+
+DRAW_WALLS          LDR       $02               ; Dark gray
+                    LDG       $02
+                    LDB       $02
+
+; Draw rect (0, 0) WIN_WIDTH CELL_SIZE
+                    LDXA      $0000
+                    LDYA      $0000
+                    LDXB      #WIN_WIDTH
+                    LDYB      #WALL_TOP
+                    DRRCT                       ; Draw rect
+
+; Draw rect (0, WIN_HEIGHT - CELL_SIZE) WIN_WIDTH CELL_SIZE
+                    LDYA      #WALL_BOTTOM
+                    DRRCT                       ; Draw rect
+                    RTS
+; End DRAW_WALLS
+
+
+DRAW_PAD            LDR       $00               ; Green
+                    LDG       $03
+                    LDB       $00
+
+                    LDXA      #P1_PAD_X
+                    LDYA      P1_PAD_Y
+                    LDXB      #PAD_WIDTH        ; Rectangle length
+                    LDYB      #PAD_HEIGHT       ; Rectangle width
+                    DRRCT
+
+                    LDXA      #CPU_PAD_X
+                    LDYA      CPU_PAD_Y
+                    DRRCT
+                    RTS
+; End DRAW_PAD
+
+
+DRAW_BALL           LDX       BALL_X
+                    LDAB      SPEED_X
+                    ABX
+                    STX       BALL_X            ; BALL_X += SPEED_X
+
+                    LDX       BALL_Y
+                    LDAB      SPEED_Y
+                    ABX
+                    STX       BALL_Y            ; BALL_Y += SPEED_Y
+
+                    JSR       WALL_COLLISIONS
+                    JSR       EXIT_COLLISIONS
+                    JSR       PAD_COLLISIONS
+                    JSR       UPDATE_SPEED
+
+                    LDR       $00               ; Blue
+                    LDG       $00
+                    LDB       $03
+
+                    LDXA      BALL_X
+                    LDYA      BALL_Y
+                    LDXB      #BALL_RADIUS
+                    DRCL                        ; Draw circle (XA, YA), radius XB
+
+                    RTS
+; End DRAW BALL
+
+
+WALL_COLLISIONS     LDX       BALL_Y
+                    CPX       #WALL_TOP_RADIUS
+                    BHI       TEST_BOTTOM
+                    BRA       CHANGE_DIR_Y        ; BALL_Y <= WALL_TOP + BALL_RADIUS or
+TEST_BOTTOM         CPX       #WALL_BOTTOM_RADIUS
+                    BLO       END_WALL_COLL
+CHANGE_DIR_Y        LDAA      SPEED_Y             ; BALL_Y >= WALL_BOTTOM - BALL_RADIUS
+                    NEGA
+                    STAA      SPEED_Y
+END_WALL_COLL       RTS
+; End WALL_COLLISIONS
+
+
+EXIT_COLLISIONS     LDX       BALL_X
+                    CPX       #EXIT_LEFT
+                    BHI       TEST_RIGHT
+                    BRA       CHANGE_DIR_X        ; BALL_X <= -2 * BALL_RADIUS
+TEST_RIGHT          CPX       #EXIT_RIGHT
+                    BLO       END_EXIT_COLL
+; TODO: change this for wait and START_GAME call (only paddles change x direction)
+CHANGE_DIR_X        LDAA      SPEED_X             ; BALL_X >= WIN_WIDTH + 2 * BALL_RADIUS
+                    NEGA
+                    STAA      SPEED_X
+END_EXIT_COLL       RTS
+; End EXIT_COLLISIONS
+
+
+PAD_COLLISIONS      RTS                           ; TODO: implement this
+; End PAD_COLLISIONS
+
+
+UPDATE_SPEED        LDX       COLL_COUNT
+                    CPX       $0005               ; COLL_COUNT == 5
+                    BNE       UPDATE_SPEED_END
+
+                    LDD       SPEED_X
+                    ASRD                          ; D = SPEED_X / 2
+                    ADDD      SPEED_X
+                    STD       SPEED_X             ; SPEED_X += SPEED_X / 2
+
+                    LDD       SPEED_Y
+                    ASRD                          ; D = SPEED_Y / 2
+                    ADDD      SPEED_Y
+                    STD       SPEED_Y             ; SPEED_Y += SPEED_Y / 2
+
+                    LDX       $0000
+                    STX       COLL_COUNT          ; COLL_COUNT = 0
+
+UPDATE_SPEED_END    RTS
