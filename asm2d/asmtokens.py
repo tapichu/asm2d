@@ -118,7 +118,7 @@ def t_HEX_NUM(t):
     return t
 
 def t_NUM(t):
-    r'-?[1-9][0-9]*'
+    r'(0)|(-?[1-9][0-9]*)'
     t.value = int(t.value)
     return t
 
