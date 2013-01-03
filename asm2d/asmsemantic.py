@@ -80,11 +80,10 @@ def second_pass(ast, const_table, data_table, inst_table):
                     error("Undefined label {}", elem, label)
             elif len(elem.inst) == 4:
                 name, size, inst_type, value = elem.inst
-                if inst_type == 'const':
-                    if value not in const_table:
-                        error("Undefined constant {}", elem, value)
-                    else:
-                        elem.inst = (name, size, 'imm', const_table[value])
+                if inst_type == 'expr':
+                    try:
+                        elem.inst = (name, size, 'imm', eval_expr(value, elem, const_table))
+                    except NameError: pass
                 elif inst_type == 'var':
                     if value not in data_table:
                         error("Undefined variable {}", elem, value)
@@ -136,6 +135,8 @@ def error(msg, node=None, *args):
     else:
         print("ERROR: {0} (at line: {1:d})".format(msg.format(*args), node.lineno), file=sys.stderr)
 
+
+# Functions to walk the AST
 
 def eval_expr(ast, node, const_table):
     "Returns the value obtained by evaluating an expression."

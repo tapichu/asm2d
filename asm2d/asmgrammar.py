@@ -51,6 +51,8 @@ def lineno(n):
         return set_lineno
     return lineno_decorator
 
+# Grammar
+
 start = 'asm'
 
 precedence = (
@@ -135,19 +137,14 @@ def p_instruction_add(p):
 
 # ADDD
 @lineno(1)
-def p_instruction_addd_const(p):
-    'instruction : ADDD CONST_REF'
-    p[0] = (p[1], 3, 'const', p[2])
+def p_instruction_addd_expr(p):
+    'instruction : ADDD expr'
+    p[0] = (p[1], 3, 'expr', p[2])
 
 @lineno(1)
 def p_instruction_addd_var(p):
     'instruction : ADDD IDENTIFIER'
     p[0] = (p[1], 3, 'var', p[2])
-
-@lineno(1)
-def p_instruction_addd(p):
-    'instruction : ADDD HEX_NUM'
-    p[0] = (p[1], 3, 'imm', p[2])
 
 # ASRD
 @lineno(1)
@@ -174,18 +171,11 @@ def p_instruction_clrs(p):
 
 # CPK, CPX
 @lineno(1)
-def p_instruction_compare_const(p):
-    '''instruction : CPK CONST_REF
-                   | CPX CONST_REF'''
+def p_instruction_compare_expr(p):
+    '''instruction : CPK expr
+                   | CPX expr'''
     size = 2 if p[1] in {'CPK'} else 3
-    p[0] = (p[1], size, 'const', p[2])
-
-@lineno(1)
-def p_instruction_compare(p):
-    '''instruction : CPK HEX_NUM
-                   | CPX HEX_NUM'''
-    size = 2 if p[1] in {'CPK'} else 3
-    p[0] = (p[1], size, 'imm', p[2])
+    p[0] = (p[1], size, 'expr', p[2])
 
 # DRCL, DRHLN, DRRCT, DRVLN
 @lineno(1)
@@ -216,20 +206,20 @@ def p_instruction_jsr(p):
 
 # LDB, LDD, LDG, LDR, LDX, LDXA, LDXB, LDYA, LDYB
 @lineno(1)
-def p_instruction_load_const(p):
-    '''instruction : LDAA CONST_REF
-                   | LDAB CONST_REF
-                   | LDB CONST_REF
-                   | LDD CONST_REF
-                   | LDG CONST_REF
-                   | LDR CONST_REF
-                   | LDX CONST_REF
-                   | LDXA CONST_REF
-                   | LDXB CONST_REF
-                   | LDYA CONST_REF
-                   | LDYB CONST_REF'''
+def p_instruction_load_expr(p):
+    '''instruction : LDAA expr
+                   | LDAB expr
+                   | LDB expr
+                   | LDD expr
+                   | LDG expr
+                   | LDR expr
+                   | LDX expr
+                   | LDXA expr
+                   | LDXB expr
+                   | LDYA expr
+                   | LDYB expr'''
     size = 2 if p[1] in {'LDAA', 'LDAB', 'LDB', 'LDG', 'LDR'} else 3
-    p[0] = (p[1], size, 'const', p[2])
+    p[0] = (p[1], size, 'expr', p[2])
 
 @lineno(1)
 def p_instruction_load_var(p):
@@ -245,22 +235,6 @@ def p_instruction_load_var(p):
                    | LDYA IDENTIFIER
                    | LDYB IDENTIFIER'''
     p[0] = (p[1], 3, 'var', p[2])
-
-@lineno(1)
-def p_instruction_load(p):
-    '''instruction : LDAA HEX_NUM
-                   | LDAB HEX_NUM
-                   | LDB HEX_NUM
-                   | LDD HEX_NUM
-                   | LDG HEX_NUM
-                   | LDR HEX_NUM
-                   | LDX HEX_NUM
-                   | LDXA HEX_NUM
-                   | LDXB HEX_NUM
-                   | LDYA HEX_NUM
-                   | LDYB HEX_NUM'''
-    size = 2 if p[1] in {'LDAA', 'LDAB', 'LDB', 'LDG', 'LDR'} else 3
-    p[0] = (p[1], size, 'imm', p[2])
 
 # MUL
 @lineno(1)
@@ -309,14 +283,9 @@ def p_instruction_suba_var(p):
 
 # SUBD
 @lineno(1)
-def p_instruction_subd_const(p):
-    'instruction : SUBD CONST_REF'
-    p[0] = (p[1], 3, 'const', p[2])
-
-@lineno(1)
-def p_instruction_subd(p):
-    'instruction : SUBD HEX_NUM'
-    p[0] = (p[1], 3, 'imm', p[2])
+def p_instruction_subd_expr(p):
+    'instruction : SUBD expr'
+    p[0] = (p[1], 3, 'expr', p[2])
 
 # TDXA, TDYA
 @lineno(1)

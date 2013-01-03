@@ -90,3 +90,6 @@ To reference a constant, add a '#' before it's identifier:
 ``` asm
         LDX   #WIDTH
 ```
+
+All immediate instructions can use expressions, they're not limited to constant
+(`EQU`) declarations.
