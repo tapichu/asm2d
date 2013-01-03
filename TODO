@@ -1,6 +1,7 @@
 * Tests.
 * Documentation.
 * CLI argument to specify the start address.
+* Expressions in instructions (like in constants).
 * More instructions.
 * Optimization: 'direct' instructions to save some bytes when the address
   can be specified with one byte.

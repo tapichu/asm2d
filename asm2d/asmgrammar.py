@@ -13,7 +13,7 @@ class Const:
         self.value = value
         self.lineno = lineno
     def __repr__(self):
-        return "Const<Id: '{0}', Value: {1:d}, Line: {2:d}>"\
+        return "Const<Id: '{0}', Value: {1}, Line: {2:d}>"\
                 .format(self.id, self.value, self.lineno)
 
 class Var:
@@ -53,6 +53,11 @@ def lineno(n):
 
 start = 'asm'
 
+precedence = (
+        ('left', 'PLUS', 'MINUS'),
+        ('left', 'TIMES', 'DIVIDE'),
+        )
+
 def p_asm(p):
     'asm : element ENDL asm'
     if p[1] is None:
@@ -65,19 +70,19 @@ def p_asm_empty(p):
 
 # Elements
 
-def p_element_constant(p):
-    'element : IDENTIFIER EQU HEX_NUM'
+def p_element_declaration_constant(p):
+    'element : IDENTIFIER EQU expr'
     p[0] = Const(p[1], p[3], p.lineno(1))
-def p_element_constant_error(p):
-    'element : IDENTIFIER error HEX_NUM'
-    error("Syntax error in constant declaration {0} (at line: {1:d})", p[1], p.lineno(1))
-
-def p_element_variable(p):
+def p_element_declaration_variable(p):
     'element : IDENTIFIER RMB NUM'
+    if p[3] <= 0:
+        error("Syntax error in variable declaration {0}: number of bytes must be a positive number (at line: {1:d})",
+                p[1], p.lineno(1))
+        return
     p[0] = Var(p[1], p[3], p.lineno(1))
-def p_element_variable_error(p):
-    'element : IDENTIFIER error NUM'
-    error("Syntax error in variable declaration {0} (at line: {1:d})", p[1], p.lineno(1))
+def p_element_declaration_error(p):
+    'element : IDENTIFIER error expr'
+    error("Syntax error in declaration {0} (at line: {1:d})", p[1], p.lineno(1))
 
 def p_element_instruction_label(p):
     'element : IDENTIFIER instruction'
@@ -96,6 +101,28 @@ def p_element_instruction_error(p):
 def p_element_empty(p):
     'element : '
     pass
+
+## Expressions
+
+def p_expr_num(p):
+    '''expr : HEX_NUM
+            | NUM'''
+    p[0] = ('num', p[1])
+
+def p_expr_const_ref(p):
+    'expr : CONST_REF'
+    p[0] = ('const', p[1])
+
+def p_expr_paren(p):
+    'expr : LPAREN expr RPAREN'
+    p[0] = p[2]
+
+def p_expr_arith(p):
+    '''expr : expr PLUS expr
+            | expr MINUS expr
+            | expr TIMES expr
+            | expr DIVIDE expr'''
+    p[0] = (p[2], p[1], p[3])
 
 ## Instructions
 

@@ -21,6 +21,7 @@ tokens = (
         'CONST_REF',        # #CONSTANT
         'CPK',              # Compare game clock
         'CPX',              # Compare register X
+        'DIVIDE',           # /
         'DRCL',             # Draw circle
         'DRHLN',            # Draw horizontal line
         'DRRCT',            # Draw rectangle
@@ -44,10 +45,14 @@ tokens = (
         'LDXB',             # Load game register XB
         'LDYA',             # Load game register YA
         'LDYB',             # Load game register YB
+        'LPAREN',           # (
+        'MINUS',            # -
         'MUL',              # Multiply unsigned (AccD = AccA x AccB)
         'NEGA',             # 2's complement acc A
         'NUM',              # 10, 35, etc.
+        'PLUS',             # +
         'RMB',              # Reserve memory bytes
+        'RPAREN',           # )
         'RSTK',             # Reset the game clock
         'RTS',              # Return from subroutine
         'STAA',             # Store accumulator A
@@ -56,6 +61,7 @@ tokens = (
         'STX',              # Store register X
         'SUBA',             # Subtract from accumulator A
         'SUBD',             # Subtract from double acc D
+        'TIMES',            # *
         'TDXA',             # Transfer double acc D to game register XA
         'TDYA',             # Transfer double acc D to game register YA
         'XGDX'              # Exchange double acc D and register X
@@ -68,6 +74,12 @@ def t_eolcomment(t):
     pass
 
 t_COMMA = r','
+t_DIVIDE = r'/'
+t_LPAREN = r'\('
+t_MINUS = r'\-'
+t_PLUS = r'\+'
+t_RPAREN = r'\)'
+t_TIMES = r'\*'
 
 def t_CHAR(t):
     r"'[A-Z0-9#@]'"
@@ -89,8 +101,9 @@ def t_MAIN(t):
     t.value = '.main'
     return t
 
-reserved = set(tokens) - {'CHAR', 'COMMA', 'CONST_REF', 'ENDL', 'HEX_NUM',\
-        'IDENTIFIER', 'IX', 'NUM'}
+reserved = set(tokens) - {'CHAR', 'COMMA', 'CONST_REF', 'DIVIDE', 'ENDL',\
+        'HEX_NUM', 'IDENTIFIER', 'IX', 'LPAREN', 'MINUS', 'NUM', 'PLUS',\
+        'RPAREN', 'TIMES'}
 
 def t_IDENTIFIER(t):
     r'[A-Za-z][A-Za-z0-9_]*'
@@ -105,7 +118,7 @@ def t_HEX_NUM(t):
     return t
 
 def t_NUM(t):
-    r'[0-9]+'
+    r'-?[1-9][0-9]*'
     t.value = int(t.value)
     return t
 

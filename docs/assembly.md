@@ -5,7 +5,7 @@ The assembly language is very simple for now:
 * Subset of the 68HC11 instructions.
 * New instructions for 2D drawing.
 * Syntax for data segment elements.
-* Very basic macros for constants.
+* Simple macros for constants.
 
 For a full description of the grammar, see `asmgrammar.py`.
 
@@ -62,13 +62,27 @@ replaced by their memory address:
 to instructions. They are declared like this:
 
 ```
-<constant> ::= <identifier> EQU <value>
+<constant> ::= <identifier> EQU <expr>
+
+<expr> ::= HEX_NUM
+       |   NUM
+       |   CONST_REF
+       |   '(' <expr> ')'
+       |   <expr> '+' <expr>
+       |   <expr> '-' <expr>
+       |   <expr> '*' <expr>
+       |   <expr> '/' <expr>
 ```
+
+So constants can be numeric values (in decimal or hexadecimal format),
+references to previously defined constants, and simple arithmetic expressions.
 
 For example:
 
 ``` asm
 WIDTH   EQU   $00B3
+HEIGHT  EQU   480
+MIDDLE  EQU   #WIDTH / 2
 ```
 
 To reference a constant, add a '#' before it's identifier:

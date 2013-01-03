@@ -11,8 +11,6 @@ SIZE = '__SIZE'
 errors = False
 error_no = 0
 
-# TODO: add lineno to error messages
-
 def semantic_analysis(ast, const_table, data_table, inst_table):
     "Semantic analysis for the AST."
     global errors, error_no
@@ -41,7 +39,9 @@ def first_pass(ast, const_table, data_table, inst_table):
         if isinstance(elem, Const):
             if elem.id in const_table:
                 warn("Overriding already defined constant {}", elem, elem.id)
-            const_table[elem.id] = elem.value
+            try:
+                const_table[elem.id] = eval_expr(elem.value, elem, const_table)
+            except NameError: pass
         elif isinstance(elem, Var):
             if elem.id in data_table:
                 error("Duplicate name definition: {}", elem, elem.id)
@@ -135,3 +135,24 @@ def error(msg, node=None, *args):
         print("ERROR: {}".format(msg.format(*args)), file=sys.stderr)
     else:
         print("ERROR: {0} (at line: {1:d})".format(msg.format(*args), node.lineno), file=sys.stderr)
+
+
+def eval_expr(ast, node, const_table):
+    "Returns the value obtained by evaluating an expression."
+    expr_type = ast[0]
+    if expr_type == 'num':
+        return ast[1]
+    elif expr_type == 'const':
+        name = ast[1]
+        if name not in const_table:
+            error("Undefined constant {}", node, name)
+            raise NameError
+        return const_table[name]
+    elif expr_type == '+':
+        return eval_expr(ast[1], node, const_table) + eval_expr(ast[2], node, const_table)
+    elif expr_type == '-':
+        return eval_expr(ast[1], node, const_table) - eval_expr(ast[2], node, const_table)
+    elif expr_type == '*':
+        return eval_expr(ast[1], node, const_table) * eval_expr(ast[2], node, const_table)
+    elif expr_type == '/':
+        return eval_expr(ast[1], node, const_table) / eval_expr(ast[2], node, const_table)
