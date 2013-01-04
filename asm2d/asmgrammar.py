@@ -2,10 +2,12 @@
 # for drawing.
 
 from __future__ import print_function
-import sys
 from functools import wraps
 from asmconstants import SIZE
+from asmerrors import error, warn
 from asmtokens import tokens
+
+# AST nodes
 
 class Var:
     "AST node for a variable."
@@ -28,6 +30,7 @@ class Inst:
         return "Inst<Label: '{0}', Size: {1:d}, Line: {2:d}, Detail: {3!r}>"\
                 .format(self.label, self.size, self.lineno, str(self.inst))
 
+
 # Helper decorator
 
 def lineno(n):
@@ -41,6 +44,7 @@ def lineno(n):
             return fn(p)
         return set_lineno
     return lineno_decorator
+
 
 # Grammar
 
@@ -67,7 +71,7 @@ def p_element_declaration_constant(p):
     'element : IDENTIFIER EQU expr'
     name, lineno = p[1], p.lineno(1)
     if name in p.parser.const_table:
-        warn("Overriding already defined constant {0} (at line: {1:d})", name, lineno)
+        warn("Overriding already defined constant {0}", name, lineno=lineno)
     try:
         p.parser.const_table[name] = eval_expr(p[3], p, lineno)
     except SyntaxError: pass
@@ -77,10 +81,10 @@ def p_element_declaration_variable(p):
     'element : IDENTIFIER RMB NUM'
     name, size, lineno = p[1], p[3], p.lineno(1)
     if name in p.parser.data_table:
-        error("Duplicate name definition: {0} (at line: {1:d})", p, name, lineno)
+        error("Duplicate name definition {0}", name, lineno=lineno, errors=p.parser.errors)
     if size <= 0:
-        error("Syntax error in variable declaration {0}: number of bytes must be a positive number (at line: {1:d})",
-                p, name, lineno)
+        error("Error in variable declaration {0}: the number of bytes must be greater than zero",
+                name, lineno=lineno, errors=p.parser.errors)
     p.parser.data_table[name] = -1
     p.parser.data_table[SIZE] += size
 
@@ -88,21 +92,21 @@ def p_element_declaration_variable(p):
 
 def p_element_declaration_error(p):
     'element : IDENTIFIER error expr'
-    error("Syntax error in declaration {0} (at line: {1:d})", p, p[1], p.lineno(1))
+    error("Syntax error in declaration {0}", p[1], lineno=p.lineno(1), errors=p.parser.errors)
 
 
 def p_element_instruction_label(p):
     'element : IDENTIFIER instruction'
     name, size, lineno = p[1], p[2][1], p.lineno(1)
     if name in p.parser.inst_table:
-        error("Duplicate label definition: {0} (at line: {1:d})", p, name, lineno)
+        error("Duplicate label definition: {0}", name, lineno=lineno, errors=p.parser.errors)
     p.parser.inst_table[name] = -1
     p.parser.inst_table[SIZE] += size
     p[0] = Inst(p[1], p[2], p[2][1], p.lineno(1))
 
 def p_element_instruction_label_error(p):
     'element : IDENTIFIER error'
-    error("Syntax error in instruction at label {0} (at line: {1:d})", p, p[1], p.lineno(1))
+    error("Syntax error in instruction at label {0}", p[1], lineno=p.lineno(1), errors=p.parser.errors)
 
 
 def p_element_instruction(p):
@@ -112,7 +116,7 @@ def p_element_instruction(p):
 
 def p_element_instruction_error(p):
     'element : error'
-    error("Syntax error in instruction (at line: {0:d})", p, p.lineno(1))
+    error("Syntax error in instruction", lineno=p.lineno(1), errors=p.parser.errors)
 
 def p_element_empty(p):
     'element : '
@@ -316,7 +320,7 @@ def p_instruction_xgdx(p):
 
 def p_error(t):
     value = t.value if t.value != '\n' else 'NEWLINE'
-    error("Syntax error near token {0} (at line: {1:d})", None, value, t.lineno)
+    error("Syntax error near token {0}", value, lineno=t.lineno)
 
 
 # Functions to walk the AST
@@ -329,7 +333,7 @@ def eval_expr(ast, p, lineno):
     elif expr_type == 'const':
         name = ast[1]
         if name not in p.parser.const_table:
-            error("Undefined constant {0} (at line: {1:d})", p, name, lineno)
+            error("Undefined constant {0}", name, lineno=lineno, errors=p.parser.errors)
             raise SyntaxError
         return p.parser.const_table[name]
     elif expr_type == '+':
@@ -340,13 +344,3 @@ def eval_expr(ast, p, lineno):
         return eval_expr(ast[1], p, lineno) * eval_expr(ast[2], p, lineno)
     elif expr_type == '/':
         return eval_expr(ast[1], p, lineno) / eval_expr(ast[2], p, lineno)
-
-
-def error(msg, p, *args):
-    "Print an error message."
-    if p: p.parser.errors.add_error()
-    print("ERROR: {}".format(msg.format(*args)), file=sys.stderr)
-
-def warn(msg, *args):
-    "Print a warning message."
-    print("WARNING: {}".format(msg.format(*args), file=sys.stderr))

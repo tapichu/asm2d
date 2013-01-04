@@ -1,9 +1,10 @@
 from __future__ import print_function
 import sys
 import asm2d.asmutil as asmutil
+from asm2d.asmerrors import ErrorReport
 
 def test_lexer(input_string):
-    errors = asmutil.ErrorReport()
+    errors = ErrorReport()
     asmlexer = asmutil.create_lexer(errors)
     asmlexer.input(input_string)
 

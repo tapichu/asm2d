@@ -9,6 +9,7 @@ import sys
 import asmcodegen
 import asmsemantic
 import asmutil
+from asmerrors import ErrorReport
 
 def read_file(filename):
     "Read the contents of a file into memory."
@@ -23,9 +24,10 @@ def read_file(filename):
         print("Error reading file '{}'.".format(filename), file=sys.stderr)
         sys.exit(1)
 
+
 def run_compiler(input_file, output_file, no_words):
     "Run the compiler on the source file."
-    errors = asmutil.ErrorReport()
+    errors = ErrorReport()
     asmlexer = asmutil.create_lexer(errors)
     asmparser = asmutil.create_parser(errors, debug=False)
 
@@ -36,6 +38,7 @@ def run_compiler(input_file, output_file, no_words):
 
     with open(output_file, 'w+') as f:
         asmcodegen.codegen(ast, asmparser.data_table, asmparser.inst_table, no_words=no_words, outfile=f)
+
 
 def main():
     "Parse the command line arguments and invoke the compiler."
@@ -57,6 +60,7 @@ def main():
         output_file = filename + '.mif'
 
     run_compiler(args.file, output_file, args.words)
+
 
 if __name__ == '__main__':
     main()

@@ -2,9 +2,10 @@ from __future__ import print_function
 import sys
 import pprint
 import asm2d.asmutil as asmutil
+from asm2d.asmerrors import ErrorReport
 
 def test_parser(input_string):
-    errors = asmutil.ErrorReport()
+    errors = ErrorReport()
     asmlexer = asmutil.create_lexer(errors)
     asmparser = asmutil.create_parser(errors, debug=True)
 

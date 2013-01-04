@@ -3,9 +3,10 @@ import sys
 import asm2d.asmcodegen as asmcodegen
 import asm2d.asmsemantic as asmsemantic
 import asm2d.asmutil as asmutil
+from asm2d.asmerrors import ErrorReport
 
 def test_codegen(input_string):
-    errors = asmutil.ErrorReport()
+    errors = ErrorReport()
     asmlexer = asmutil.create_lexer(errors)
     asmparser = asmutil.create_parser(errors, debug=True)
 

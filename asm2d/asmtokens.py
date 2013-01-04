@@ -1,8 +1,9 @@
-# This is a set of regular expressions defining a lexer for the 68112D microprocessor.
+# This is a set of regular expressions defining a lexer for the 68112D
+# microprocessor.
 
 from __future__ import print_function
-import sys
 from bitstring import BitArray
+from asmerrors import error
 
 tokens = (
         'ABA',              # Add accumulator B to accumulator A
@@ -131,7 +132,5 @@ def t_ENDL(t):
     return t
 
 def t_error(t):
-    print("ERROR: Illegal character '{0}' (at line: {1:d})"\
-            .format(t.value[0], t.lexer.lineno), file=sys.stderr)
-    t.lexer.errors.add_error()
+    error("Illegal character '{0}'", t.value[0], errors=t.lexer.errors, lineno=t.lexer.lineno)
     t.lexer.skip(1)

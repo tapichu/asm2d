@@ -6,10 +6,13 @@ CONST5      EQU     5 * 4 / 2 + 1
 CONST6      EQU     5 * 4 / (2 + 1)
 CONST7      EQU     5 * -4 - -2
 ;CONST8      EQU     5 * #CONST9
+;CONST7      EQU     23
 ;CONST7      EQU     23.0
+;CONST       EQI     12 + 34
 
 VAR1        RMB     5
 VAR2        RMB     2
+;VAR2        RMB     -2
 
             ;LDX     VAR3
 .main       LDX     #CONST1
@@ -20,3 +23,12 @@ VAR2        RMB     2
             LDX     #CONST6
             LDX     #CONST7
             ;LDX     #CONST8
+
+;.main       LDX     99
+;TEST        LDF
+            ;XXX
+            ;BEQ     BLA
+            ;LDR     $0992
+            ;LDAA    $0993
+            ;LDX     $0FFFFF
+            ;STAB    500,X

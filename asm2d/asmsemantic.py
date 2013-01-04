@@ -1,29 +1,25 @@
 # Semantic analysis of an AST (parsed 68hc11 assembly code).
 
 from __future__ import print_function
-import sys
 from bitstring import BitArray
 from asmconstants import SIZE
+from asmerrors import error
 from asmgrammar import Inst, Var
 
 MAIN_ADDR = 0
 
-errors = None
-
-def analyse(ast, data_table, inst_table, errorReport):
+def analyse(ast, data_table, inst_table, errors):
     "Semantic analysis for the AST."
-    global errors
-    errors = errorReport
 
     if '.main' not in inst_table:
-        error("Main entry point not defined")
+        error("Main entry point not defined", errors=errors)
 
-    first_pass(ast, data_table, inst_table)
-    second_pass(ast, data_table, inst_table)
+    first_pass(ast, data_table, inst_table, errors)
+    second_pass(ast, data_table, inst_table, errors)
 
     errors.report_errors()
 
-def first_pass(ast, data_table, inst_table):
+def first_pass(ast, data_table, inst_table, errors):
     """The first pass assigns an address to variables (data segment) and
     labels, and checks for undefined references.
     """
@@ -44,19 +40,19 @@ def first_pass(ast, data_table, inst_table):
             if len(elem.inst) == 3:
                 name, size, label = elem.inst
                 if label not in inst_table:
-                    error("Undefined label {}", elem, label)
+                    error("Undefined label {}", label, lineno=elem.lineno, errors=errors)
             elif len(elem.inst) == 4:
                 name, size, inst_type, value = elem.inst
                 if inst_type == 'var':
                     if value not in data_table:
-                        error("Undefined variable {}", elem, value)
+                        error("Undefined variable {}", value, lineno=elem.lineno, errors=errors)
                     else:
                         elem.inst = (name, size, 'ext', data_table[value])
 
     if '.main' in inst_table and inst_table['.main'] != MAIN_ADDR:
-        error("Main label should be the first instruction (at line: {0:d})", None, main_lineno)
+        error("Main label should be the first instruction",lineno=main_lineno, errors=errors)
 
-def second_pass(ast, data_table, inst_table):
+def second_pass(ast, data_table, inst_table, errors):
     """The second pass handles unsigned values (color registers, fps) and checks
     that immediate values are of the correct size (one or two bytes).
     """
@@ -66,34 +62,22 @@ def second_pass(ast, data_table, inst_table):
                 name, size, inst_type, value = elem.inst
                 if name in {'CPK', 'LDB', 'LDG', 'LDR'}:
                     if value < -128 or value > 127:
-                        error("Value out of range {0} (instruction {1})", elem, value, name)
+                        error("Value out of range {0} (instruction {1})",
+                                value, name, lineno=elem.lineno, errors=errors)
                     else:
                         value = BitArray(int=value, length=8).uint
                         elem.inst = (name, size, inst_type, value)
                 elif inst_type == 'imm' and name != 'DRSYM':
                     if size == 2:
                         if value < -128 or value > 127:
-                            error("Value out of range {0} (instruction {1})", elem, value, name)
+                            error("Value out of range {0} (instruction {1})",
+                                    value, name, lineno=elem.lineno, errors=errors)
                     elif size == 3:
                         if value < -32768 or value > 32767:
-                            error("Value out of range {0} (instruction {1})", elem, value, name)
+                            error("Value out of range {0} (instruction {1})",
+                                    value, name, lineno=elem.lineno, errors=errors)
             elif len(elem.inst) == 5:
                 name, _, _, offset, _ = elem.inst
                 if offset < -128 or offset > 127:
-                    error("Value out of range {0} (instruction {1})", elem, offset, name)
-
-
-# Error reporting
-
-def warn(msg, node, *args):
-    "Print a warning message."
-    print("WARNING: {0} (at line: {1:d})".format(msg.format(*args), node.lineno), file=sys.stderr)
-
-def error(msg, node=None, *args):
-    "Pring an error message, increment the global error count."
-    errors.add_error()
-
-    if node is None:
-        print("ERROR: {}".format(msg.format(*args)), file=sys.stderr)
-    else:
-        print("ERROR: {0} (at line: {1:d})".format(msg.format(*args), node.lineno), file=sys.stderr)
+                    error("Value out of range {0} (instruction {1})",
+                            offset, name, lineno=elem.lineno, errors=errors)
