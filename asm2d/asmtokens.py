@@ -133,4 +133,5 @@ def t_ENDL(t):
 def t_error(t):
     print("ERROR: Illegal character '{0}' (at line: {1:d})"\
             .format(t.value[0], t.lexer.lineno), file=sys.stderr)
+    t.lexer.errors = True
     t.lexer.skip(1)

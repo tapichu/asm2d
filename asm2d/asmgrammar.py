@@ -79,26 +79,26 @@ def p_element_declaration_variable(p):
     'element : IDENTIFIER RMB NUM'
     if p[3] <= 0:
         error("Syntax error in variable declaration {0}: number of bytes must be a positive number (at line: {1:d})",
-                p[1], p.lineno(1))
+                p, p[1], p.lineno(1))
         return
     p[0] = Var(p[1], p[3], p.lineno(1))
 def p_element_declaration_error(p):
     'element : IDENTIFIER error expr'
-    error("Syntax error in declaration {0} (at line: {1:d})", p[1], p.lineno(1))
+    error("Syntax error in declaration {0} (at line: {1:d})", p, p[1], p.lineno(1))
 
 def p_element_instruction_label(p):
     'element : IDENTIFIER instruction'
     p[0] = Inst(p[1], p[2], p[2][1], p.lineno(1))
 def p_element_instruction_label_error(p):
     'element : IDENTIFIER error'
-    error("Syntax error in instruction at label {0} (at line: {1:d})", p[1], p.lineno(1))
+    error("Syntax error in instruction at label {0} (at line: {1:d})", p, p[1], p.lineno(1))
 
 def p_element_instruction(p):
     'element : instruction'
     p[0] = Inst('', p[1], p[1][1], p.lineno(1))
 def p_element_instruction_error(p):
     'element : error'
-    error("Syntax error in instruction (at line: {0:d})", p.lineno(1))
+    error("Syntax error in instruction (at line: {0:d})", p, p.lineno(1))
 
 def p_element_empty(p):
     'element : '
@@ -300,9 +300,10 @@ def p_instruction_xgdx(p):
     'instruction : XGDX'
     p[0] = (p[1], 1)
 
-def p_error(p):
-    value = p.value if p.value != '\n' else 'NEWLINE'
-    error("Syntax error near token {0} (at line: {1:d})", value, p.lineno)
+def p_error(t):
+    value = t.value if t.value != '\n' else 'NEWLINE'
+    error("Syntax error near token {0} (at line: {1:d})", None, value, t.lineno)
 
-def error(msg, *args):
+def error(msg, p, *args):
+    if p: p.parser.errors = True
     print("ERROR: {}".format(msg.format(*args)), file=sys.stderr)

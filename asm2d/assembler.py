@@ -33,11 +33,18 @@ def run_compiler(input_file, output_file, no_words):
     inst_table = {}
 
     asmlexer = lex.lex(module=asmtokens)
+    asmlexer.errors = False
+
     asmparser = yacc.yacc(module=asmgrammar, write_tables=0, debug=0)
+    asmparser.errors = False
 
     input_string = read_file(input_file)
     ast = asmparser.parse(input_string, lexer=asmlexer)
+
     asmsemantic.semantic_analysis(ast, const_table, data_table, inst_table)
+
+    if asmlexer.errors or asmparser.errors:
+        exit(1)
 
     with open(output_file, 'w+') as f:
         asmcodegen.codegen(ast, data_table, inst_table, no_words=no_words, outfile=f)

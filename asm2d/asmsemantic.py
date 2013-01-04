@@ -120,22 +120,6 @@ def third_pass(ast, const_table, data_table, inst_table):
                     error("Value out of range {0} (instruction {1})", elem, offset, name)
 
 
-def warn(msg, node, *args):
-    "Print a warning message."
-    print("WARNING: {0} (at line: {1:d})".format(msg.format(*args), node.lineno))
-
-def error(msg, node=None, *args):
-    "Pring an error message, increment the global error count."
-    global errors, error_no
-    errors = True
-    error_no += 1
-
-    if node is None:
-        print("ERROR: {}".format(msg.format(*args)), file=sys.stderr)
-    else:
-        print("ERROR: {0} (at line: {1:d})".format(msg.format(*args), node.lineno), file=sys.stderr)
-
-
 # Functions to walk the AST
 
 def eval_expr(ast, node, const_table):
@@ -157,3 +141,21 @@ def eval_expr(ast, node, const_table):
         return eval_expr(ast[1], node, const_table) * eval_expr(ast[2], node, const_table)
     elif expr_type == '/':
         return eval_expr(ast[1], node, const_table) / eval_expr(ast[2], node, const_table)
+
+
+# Error reporting
+
+def warn(msg, node, *args):
+    "Print a warning message."
+    print("WARNING: {0} (at line: {1:d})".format(msg.format(*args), node.lineno))
+
+def error(msg, node=None, *args):
+    "Pring an error message, increment the global error count."
+    global errors, error_no
+    errors = True
+    error_no += 1
+
+    if node is None:
+        print("ERROR: {}".format(msg.format(*args)), file=sys.stderr)
+    else:
+        print("ERROR: {0} (at line: {1:d})".format(msg.format(*args), node.lineno), file=sys.stderr)

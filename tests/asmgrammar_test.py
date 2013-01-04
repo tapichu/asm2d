@@ -8,8 +8,15 @@ import asm2d.asmgrammar as asmgrammar
 
 def test_parser(input_string):
     asmlexer = lex.lex(module=asmtokens)
+    asmlexer.errors = False
     asmparser = yacc.yacc(module=asmgrammar, tabmodule="parsetabasm")
-    return asmparser.parse(input_string, lexer=asmlexer)
+    asmparser.errors = False
+
+    ast = asmparser.parse(input_string, lexer=asmlexer)
+
+    if asmlexer.errors or asmparser.errors:
+        exit(1)
+    return ast
 
 def main():
     if len(sys.argv) < 2:
