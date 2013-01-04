@@ -4,8 +4,8 @@
 from __future__ import print_function
 import sys
 from functools import wraps
-from asmtokens import tokens
 from asmconstants import SIZE
+from asmtokens import tokens
 
 class Var:
     "AST node for a variable."
@@ -318,15 +318,6 @@ def p_error(t):
     value = t.value if t.value != '\n' else 'NEWLINE'
     error("Syntax error near token {0} (at line: {1:d})", None, value, t.lineno)
 
-def error(msg, p, *args):
-    "Print an error message."
-    if p: p.parser.errors = True
-    print("ERROR: {}".format(msg.format(*args)), file=sys.stderr)
-
-def warn(msg, *args):
-    "Print a warning message."
-    print("WARNING: {}".format(msg.format(*args), file=sys.stderr))
-
 
 # Functions to walk the AST
 
@@ -349,3 +340,13 @@ def eval_expr(ast, p, lineno):
         return eval_expr(ast[1], p, lineno) * eval_expr(ast[2], p, lineno)
     elif expr_type == '/':
         return eval_expr(ast[1], p, lineno) / eval_expr(ast[2], p, lineno)
+
+
+def error(msg, p, *args):
+    "Print an error message."
+    if p: p.parser.errors.add_error()
+    print("ERROR: {}".format(msg.format(*args)), file=sys.stderr)
+
+def warn(msg, *args):
+    "Print a warning message."
+    print("WARNING: {}".format(msg.format(*args), file=sys.stderr))

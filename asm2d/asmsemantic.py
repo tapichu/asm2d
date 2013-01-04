@@ -3,19 +3,17 @@
 from __future__ import print_function
 import sys
 from bitstring import BitArray
-from asmgrammar import Inst, Var
 from asmconstants import SIZE
+from asmgrammar import Inst, Var
 
 MAIN_ADDR = 0
 
-errors = False
-error_no = 0
+errors = None
 
-def analyse(ast, data_table, inst_table):
+def analyse(ast, data_table, inst_table, errorReport):
     "Semantic analysis for the AST."
-    global errors, error_no
-    errors = False
-    error_no = 0
+    global errors
+    errors = errorReport
 
     if '.main' not in inst_table:
         error("Main entry point not defined")
@@ -23,12 +21,7 @@ def analyse(ast, data_table, inst_table):
     first_pass(ast, data_table, inst_table)
     second_pass(ast, data_table, inst_table)
 
-    if errors:
-        if error_no == 1:
-            print("There is 1 error.")
-        else:
-            print("There are {0:d} errors.".format(error_no))
-        exit(1)
+    errors.report_errors()
 
 def first_pass(ast, data_table, inst_table):
     """The first pass assigns an address to variables (data segment) and
@@ -36,6 +29,7 @@ def first_pass(ast, data_table, inst_table):
     """
     data_offset = inst_table[SIZE]
     code_offset = 0
+    main_lineno = 0
 
     for elem in ast:
         if isinstance(elem, Var):
@@ -43,6 +37,7 @@ def first_pass(ast, data_table, inst_table):
             data_offset += elem.size
         if isinstance(elem, Inst):
             if elem.label != '':
+                if elem.label == '.main': main_lineno = elem.lineno
                 inst_table[elem.label] = code_offset
             code_offset += elem.size
 
@@ -59,7 +54,7 @@ def first_pass(ast, data_table, inst_table):
                         elem.inst = (name, size, 'ext', data_table[value])
 
     if '.main' in inst_table and inst_table['.main'] != MAIN_ADDR:
-        error("Main label should be the first instruction")
+        error("Main label should be the first instruction (at line: {0:d})", None, main_lineno)
 
 def second_pass(ast, data_table, inst_table):
     """The second pass handles unsigned values (color registers, fps) and checks
@@ -96,9 +91,7 @@ def warn(msg, node, *args):
 
 def error(msg, node=None, *args):
     "Pring an error message, increment the global error count."
-    global errors, error_no
-    errors = True
-    error_no += 1
+    errors.add_error()
 
     if node is None:
         print("ERROR: {}".format(msg.format(*args)), file=sys.stderr)

@@ -4,8 +4,8 @@ from __future__ import print_function
 import math
 import sys
 from bitstring import BitArray
-from asmgrammar import Inst, Var
 from asmconstants import SIZE, OP_CODES, SYM_TABLE
+from asmgrammar import Inst, Var
 
 _file = sys.stdout
 _addr_bits = 0

@@ -5,14 +5,12 @@ import asm2d.asmsemantic as asmsemantic
 import asm2d.asmutil as asmutil
 
 def test_semantic_analysis(input_string):
-    asmlexer = asmutil.create_lexer()
-    asmparser = asmutil.create_parser()
+    errors = asmutil.ErrorReport()
+    asmlexer = asmutil.create_lexer(errors)
+    asmparser = asmutil.create_parser(errors, debug=True)
 
     ast = asmparser.parse(input_string, lexer=asmlexer)
-    asmsemantic.analyse(ast, asmparser.data_table, asmparser.inst_table)
-
-    if asmlexer.errors or asmparser.errors:
-        sys.exit(1)
+    asmsemantic.analyse(ast, asmparser.data_table, asmparser.inst_table, errors)
 
     return (ast, asmparser.data_table, asmparser.inst_table)
 

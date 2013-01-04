@@ -3,7 +3,8 @@ import sys
 import asm2d.asmutil as asmutil
 
 def test_lexer(input_string):
-    asmlexer = asmutil.create_lexer()
+    errors = asmutil.ErrorReport()
+    asmlexer = asmutil.create_lexer(errors)
     asmlexer.input(input_string)
 
     result = []
@@ -12,9 +13,7 @@ def test_lexer(input_string):
         if not token: break
         result = result + [(token.type, token.value)]
 
-    if asmlexer.errors:
-        sys.exit(1)
-
+    errors.report_errors()
     return result
 
 def main():

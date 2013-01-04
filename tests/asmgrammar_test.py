@@ -4,14 +4,13 @@ import pprint
 import asm2d.asmutil as asmutil
 
 def test_parser(input_string):
-    asmlexer = asmutil.create_lexer()
-    asmparser = asmutil.create_parser()
+    errors = asmutil.ErrorReport()
+    asmlexer = asmutil.create_lexer(errors)
+    asmparser = asmutil.create_parser(errors, debug=True)
 
     ast = asmparser.parse(input_string, lexer=asmlexer)
 
-    if asmlexer.errors or asmparser.errors:
-        sys.exit(1)
-
+    errors.report_errors()
     return ast, asmparser
 
 def main():

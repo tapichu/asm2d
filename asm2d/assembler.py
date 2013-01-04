@@ -3,11 +3,11 @@
 
 from __future__ import print_function
 import argparse
-import pkg_resources
 import os
+import pkg_resources
 import sys
-import asmsemantic
 import asmcodegen
+import asmsemantic
 import asmutil
 
 def read_file(filename):
@@ -25,16 +25,14 @@ def read_file(filename):
 
 def run_compiler(input_file, output_file, no_words):
     "Run the compiler on the source file."
-    asmlexer = asmutil.create_lexer()
-    asmparser = asmutil.create_parser(debug=False)
+    errors = asmutil.ErrorReport()
+    asmlexer = asmutil.create_lexer(errors)
+    asmparser = asmutil.create_parser(errors, debug=False)
 
     input_string = read_file(input_file)
     ast = asmparser.parse(input_string, lexer=asmlexer)
 
-    asmsemantic.analyse(ast, asmparser.data_table, asmparser.inst_table)
-
-    if asmlexer.errors or asmparser.errors:
-        sys.exit(1)
+    asmsemantic.analyse(ast, asmparser.data_table, asmparser.inst_table, errors)
 
     with open(output_file, 'w+') as f:
         asmcodegen.codegen(ast, asmparser.data_table, asmparser.inst_table, no_words=no_words, outfile=f)

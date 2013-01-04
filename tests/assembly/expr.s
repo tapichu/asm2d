@@ -6,11 +6,12 @@ CONST5      EQU     5 * 4 / 2 + 1
 CONST6      EQU     5 * 4 / (2 + 1)
 CONST7      EQU     5 * -4 - -2
 ;CONST8      EQU     5 * #CONST9
-;CONST7      EQU     23
+;CONST7      EQU     23.0
 
 VAR1        RMB     5
 VAR2        RMB     2
 
+            ;LDX     VAR3
 .main       LDX     #CONST1
             LDX     #CONST2
             LDX     #CONST3

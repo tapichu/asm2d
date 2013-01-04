@@ -1,4 +1,4 @@
-# This is a set of regular expressions defining a lexer for our 68HC11 clone.
+# This is a set of regular expressions defining a lexer for the 68112D microprocessor.
 
 from __future__ import print_function
 import sys
@@ -133,5 +133,5 @@ def t_ENDL(t):
 def t_error(t):
     print("ERROR: Illegal character '{0}' (at line: {1:d})"\
             .format(t.value[0], t.lexer.lineno), file=sys.stderr)
-    t.lexer.errors = True
+    t.lexer.errors.add_error()
     t.lexer.skip(1)
