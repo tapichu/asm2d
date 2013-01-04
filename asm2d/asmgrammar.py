@@ -5,8 +5,7 @@ from __future__ import print_function
 import sys
 from functools import wraps
 from asmtokens import tokens
-
-SIZE = '__SIZE'
+from asmconstants import SIZE
 
 class Var:
     "AST node for a variable."

@@ -1,31 +1,18 @@
 from __future__ import print_function
 import sys
-import ply.lex as lex
-import ply.yacc as yacc
-import asm2d.asmtokens as asmtokens
-import asm2d.asmgrammar as asmgrammar
 import asm2d.asmsemantic as asmsemantic
 import asm2d.asmcodegen as asmcodegen
-
-SIZE = '__SIZE'
+import asm2d.asmutil as asmutil
 
 def test_codegen(input_string):
-    asmlexer = lex.lex(module=asmtokens)
-    asmlexer.errors = False
-
-    asmparser = yacc.yacc(module=asmgrammar, tabmodule="parsetabasm")
-    asmparser.errors = False
-    asmparser.const_table = {}
-    asmparser.data_table = {}
-    asmparser.inst_table = {}
-    asmparser.data_table[SIZE] = 0
-    asmparser.inst_table[SIZE] = 0
+    asmlexer = asmutil.create_lexer()
+    asmparser = asmutil.create_parser()
 
     ast = asmparser.parse(input_string, lexer=asmlexer)
-    asmsemantic.semantic_analysis(ast, asmparser.data_table, asmparser.inst_table)
+    asmsemantic.analyse(ast, asmparser.data_table, asmparser.inst_table)
 
     if asmlexer.errors or asmparser.errors:
-        exit(1)
+        sys.exit(1)
 
     asmcodegen.codegen(ast, asmparser.data_table, asmparser.inst_table)
 

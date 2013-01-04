@@ -1,29 +1,16 @@
 from __future__ import print_function
 import sys
 import pprint
-import ply.lex as lex
-import ply.yacc as yacc
-import asm2d.asmtokens as asmtokens
-import asm2d.asmgrammar as asmgrammar
-
-SIZE = '__SIZE'
+import asm2d.asmutil as asmutil
 
 def test_parser(input_string):
-    asmlexer = lex.lex(module=asmtokens)
-    asmlexer.errors = False
-
-    asmparser = yacc.yacc(module=asmgrammar, tabmodule="parsetabasm")
-    asmparser.errors = False
-    asmparser.const_table = {}
-    asmparser.data_table = {}
-    asmparser.inst_table = {}
-    asmparser.data_table[SIZE] = 0
-    asmparser.inst_table[SIZE] = 0
+    asmlexer = asmutil.create_lexer()
+    asmparser = asmutil.create_parser()
 
     ast = asmparser.parse(input_string, lexer=asmlexer)
 
     if asmlexer.errors or asmparser.errors:
-        exit(1)
+        sys.exit(1)
 
     return ast, asmparser
 

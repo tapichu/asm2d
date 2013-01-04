@@ -1,11 +1,9 @@
 from __future__ import print_function
 import sys
-import ply.lex as lex
-import asm2d.asmtokens as asmtokens
+import asm2d.asmutil as asmutil
 
 def test_lexer(input_string):
-    asmlexer = lex.lex(module=asmtokens)
-    asmlexer.errors = False
+    asmlexer = asmutil.create_lexer()
     asmlexer.input(input_string)
 
     result = []

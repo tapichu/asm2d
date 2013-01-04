@@ -4,14 +4,14 @@ from __future__ import print_function
 import sys
 from bitstring import BitArray
 from asmgrammar import Inst, Var
+from asmconstants import SIZE
 
 MAIN_ADDR = 0
-SIZE = '__SIZE'
 
 errors = False
 error_no = 0
 
-def semantic_analysis(ast, data_table, inst_table):
+def analyse(ast, data_table, inst_table):
     "Semantic analysis for the AST."
     global errors, error_no
     errors = False
