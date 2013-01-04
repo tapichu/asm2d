@@ -21,7 +21,7 @@ OP_CODES = {
         'DRCL': 0x65,           # Unused opcode (in 6811)
         'DRHLN': 0x6B,          # Unused opcode (in 6811)
         'DRRCT': 0x75,          # Unused opcode (in 6811)
-        'DRSYM': {'imm': 0xC5}, # Shadows BITB
+        'DRSYM': {'imm': 0xA5}, # Shadows BITA
         'DRVLN': 0x7B,          # Unused opcode (in 6811)
         'INX': 0x08,
         'JSR': 0xBD,
@@ -38,6 +38,8 @@ OP_CODES = {
         'LDYB': {'imm': 0x62, 'ext': 0x72},     # Unused opcodes (in 6811)
         'MUL': 0x3D,
         'NEGA': 0x40,
+        'PSHX': 0x3C,
+        'PULX': 0x38,
         'RSTK': 0xC7,           # Unused opcode (in 6811)
         'RTS': 0x39,
         'STAA': {'ext': 0xB7, 'ind': 0xA7},
@@ -46,8 +48,10 @@ OP_CODES = {
         'STX': {'ext': 0xFF},
         'SUBA': {'ext': 0xB0},
         'SUBD': {'imm': 0x83},
-        'TDXA': 0xA5,           # Shadows BITA
-        'TDYA': 0xB5,           # Shadows BITA
+        'TDXA': 0xC5,           # Shadows BITB
+        'TDXB': 0xD5,           # Shadows BITB
+        'TDYA': 0xE5,           # Shadows BITB
+        'TDYB': 0xF5,           # Shadows BITB
         'XGDX': 0x8F
         }
 

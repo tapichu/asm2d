@@ -266,6 +266,13 @@ def p_instruction_nega(p):
     'instruction : NEGA'
     p[0] = (p[1], 1)
 
+# PSHX, PULX
+@lineno(1)
+def p_instruction_stack(p):
+    '''instruction : PSHX
+                   | PULX'''
+    p[0] = (p[1], 1)
+
 # RSTK
 @lineno(1)
 def p_instruction_rstk(p):
@@ -278,7 +285,7 @@ def p_instruction_rts(p):
     'instruction : RTS'
     p[0] = (p[1], 1)
 
-# STAA, STAB, STX
+# STAA, STAB, STD, STX
 @lineno(1)
 def p_instruction_store_ind(p):
     '''instruction : STAA NUM COMMA IX
@@ -305,11 +312,13 @@ def p_instruction_subd_expr(p):
     'instruction : SUBD expr'
     p[0] = (p[1], 3, 'imm', eval_expr(p[2], p, p.lineno(1)))
 
-# TDXA, TDYA
+# TDXA, TDXB, TDYA, TDYB
 @lineno(1)
 def p_instruction_transfer(p):
     '''instruction : TDXA
-                   | TDYA'''
+                   | TDXB
+                   | TDYA
+                   | TDYB'''
     p[0] = (p[1], 1)
 
 # XGDX

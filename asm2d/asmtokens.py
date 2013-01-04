@@ -52,6 +52,8 @@ tokens = (
         'NEGA',             # 2's complement acc A
         'NUM',              # 10, 35, etc.
         'PLUS',             # +
+        'PSHX',             # Push index register X onto stack
+        'PULX',             # Pull index register X from stack
         'RMB',              # Reserve memory bytes
         'RPAREN',           # )
         'RSTK',             # Reset the game clock
@@ -64,7 +66,9 @@ tokens = (
         'SUBD',             # Subtract from double acc D
         'TIMES',            # *
         'TDXA',             # Transfer double acc D to game register XA
+        'TDXB',             # Transfer double acc D to game register XB
         'TDYA',             # Transfer double acc D to game register YA
+        'TDYB',             # Transfer double acc D to game register YB
         'XGDX'              # Exchange double acc D and register X
         )
 
