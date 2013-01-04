@@ -266,11 +266,34 @@ def p_instruction_nega(p):
     'instruction : NEGA'
     p[0] = (p[1], 1)
 
-# PSHX, PULX
+# PSHA, PSHB, PSHCB, PSHCG, PSHCR, PSHX, PSHXA, PSHXB, PSHYA, PSHYB
 @lineno(1)
-def p_instruction_stack(p):
-    '''instruction : PSHX
-                   | PULX'''
+def p_instruction_stack_push(p):
+    '''instruction : PSHA
+                   | PSHB
+                   | PSHCB
+                   | PSHCG
+                   | PSHCR
+                   | PSHX
+                   | PSHXA
+                   | PSHXB
+                   | PSHYA
+                   | PSHYB'''
+    p[0] = (p[1], 1)
+
+# PULA, PULB, PULCB, PULCG, PULCR, PULX, PULXA, PULXB, PULYA, PULYB
+@lineno(1)
+def p_instruction_stack_pop(p):
+    '''instruction : PULA
+                   | PULB
+                   | PULCB
+                   | PULCG
+                   | PULCR
+                   | PULX
+                   | PULXA
+                   | PULXB
+                   | PULYA
+                   | PULYB'''
     p[0] = (p[1], 1)
 
 # RSTK

@@ -38,8 +38,26 @@ OP_CODES = {
         'LDYB': {'imm': 0x62, 'ext': 0x72},     # Unused opcodes (in 6811)
         'MUL': 0x3D,
         'NEGA': 0x40,
+        'PSHA': 0x36,
+        'PSHB': 0x37,
+        'PSHCB': 0x88,          # Shadows EORA
+        'PSHCG': 0x98,          # Shadows EORA
+        'PSHCR': 0xA8,          # Shadows EORA
         'PSHX': 0x3C,
+        'PSHXA': 0xB8,          # Shadows EORA
+        'PSHXB': 0xC8,          # Shadows EORB
+        'PSHYA': 0xD8,          # Shadows EORB
+        'PSHYB': 0xE8,          # Shadows EORB
+        'PULA': 0x32,
+        'PULB': 0x33,
+        'PULCB': 0x8A,          # Shadows ORAA
+        'PULCG': 0x9A,          # Shadows ORAA
+        'PULCR': 0xAA,          # Shadows ORAA
         'PULX': 0x38,
+        'PULXA': 0xBA,          # Shadows ORAA
+        'PULXB': 0xCA,          # Shadows ORAB
+        'PULYA': 0xDA,          # Shadows ORAB
+        'PULYB': 0xEA,          # Shadows ORAB
         'RSTK': 0xC7,           # Unused opcode (in 6811)
         'RTS': 0x39,
         'STAA': {'ext': 0xB7, 'ind': 0xA7},

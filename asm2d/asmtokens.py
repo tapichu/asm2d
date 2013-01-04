@@ -52,8 +52,26 @@ tokens = (
         'NEGA',             # 2's complement acc A
         'NUM',              # 10, 35, etc.
         'PLUS',             # +
+        'PSHA',             # Push accumulator A onto stack
+        'PSHB',             # Push accumulator B onto stack
+        'PSHCB',            # Push colour blue onto stack
+        'PSHCG',            # Push colour green onto stack
+        'PSHCR',            # Push colour red onto stack
         'PSHX',             # Push index register X onto stack
+        'PSHXA',            # Push game register XA onto stack
+        'PSHXB',            # Push game register XB onto stack
+        'PSHYA',            # Push game register YA onto stack
+        'PSHYB',            # Push game register YB onto stack
+        'PULA',             # Pull accumulator A from stack
+        'PULB',             # Pull accumulator B from stack
+        'PULCB',            # Pull colour blue from stack
+        'PULCG',            # Pull colour green from stack
+        'PULCR',            # Pull colour red from stack
         'PULX',             # Pull index register X from stack
+        'PULXA',            # Pull game register XA from stack
+        'PULXB',            # Pull game register XB from stack
+        'PULYA',            # Pull game register YA from stack
+        'PULYB',            # Pull game register YB from stack
         'RMB',              # Reserve memory bytes
         'RPAREN',           # )
         'RSTK',             # Reset the game clock
