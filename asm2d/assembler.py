@@ -13,6 +13,8 @@ import asmgrammar
 import asmsemantic
 import asmcodegen
 
+SIZE = '__SIZE'
+
 def read_file(filename):
     "Read the contents of a file into memory."
     if not os.path.isfile(filename):
@@ -28,26 +30,27 @@ def read_file(filename):
 
 def run_compiler(input_file, output_file, no_words):
     "Run the compiler on the source file."
-    const_table = {}
-    data_table = {}
-    inst_table = {}
-
     asmlexer = lex.lex(module=asmtokens)
     asmlexer.errors = False
 
     asmparser = yacc.yacc(module=asmgrammar, write_tables=0, debug=0)
     asmparser.errors = False
+    asmparser.const_table = {}
+    asmparser.data_table = {}
+    asmparser.inst_table = {}
+    asmparser.data_table[SIZE] = 0
+    asmparser.inst_table[SIZE] = 0
 
     input_string = read_file(input_file)
     ast = asmparser.parse(input_string, lexer=asmlexer)
 
-    asmsemantic.semantic_analysis(ast, const_table, data_table, inst_table)
+    asmsemantic.semantic_analysis(ast, asmparser.data_table, asmparser.inst_table)
 
     if asmlexer.errors or asmparser.errors:
         exit(1)
 
     with open(output_file, 'w+') as f:
-        asmcodegen.codegen(ast, data_table, inst_table, no_words=no_words, outfile=f)
+        asmcodegen.codegen(ast, asmparser.data_table, asmparser.inst_table, no_words=no_words, outfile=f)
 
 def main():
     "Parse the command line arguments and invoke the compiler."

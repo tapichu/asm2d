@@ -7,16 +7,27 @@ import asm2d.asmtokens as asmtokens
 import asm2d.asmgrammar as asmgrammar
 import asm2d.asmsemantic as asmsemantic
 
-def test_semantic_analysis(input_string):
-    const_table = {}
-    data_table = {}
-    inst_table = {}
+SIZE = '__SIZE'
 
+def test_semantic_analysis(input_string):
     asmlexer = lex.lex(module=asmtokens)
+    asmlexer.errors = False
+
     asmparser = yacc.yacc(module=asmgrammar, tabmodule="parsetabasm")
+    asmparser.errors = False
+    asmparser.const_table = {}
+    asmparser.data_table = {}
+    asmparser.inst_table = {}
+    asmparser.data_table[SIZE] = 0
+    asmparser.inst_table[SIZE] = 0
+
     ast = asmparser.parse(input_string, lexer=asmlexer)
-    asmsemantic.semantic_analysis(ast, const_table, data_table, inst_table)
-    return (ast, const_table, data_table, inst_table)
+    asmsemantic.semantic_analysis(ast, asmparser.data_table, asmparser.inst_table)
+
+    if asmlexer.errors or asmparser.errors:
+        exit(1)
+
+    return (ast, asmparser.data_table, asmparser.inst_table)
 
 def main():
     if len(sys.argv) < 2:
@@ -27,10 +38,9 @@ def main():
     with open(file_name) as f:
         contents = f.read()
 
-    ast, const_table, data_table, inst_table = test_semantic_analysis(contents)
+    ast, data_table, inst_table = test_semantic_analysis(contents)
 
     pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(const_table)
     pp.pprint(data_table)
     pp.pprint(inst_table)
     pp.pprint(ast)

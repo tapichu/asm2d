@@ -7,16 +7,27 @@ import asm2d.asmgrammar as asmgrammar
 import asm2d.asmsemantic as asmsemantic
 import asm2d.asmcodegen as asmcodegen
 
-def test_codegen(input_string):
-    const_table = {}
-    data_table = {}
-    inst_table = {}
+SIZE = '__SIZE'
 
+def test_codegen(input_string):
     asmlexer = lex.lex(module=asmtokens)
+    asmlexer.errors = False
+
     asmparser = yacc.yacc(module=asmgrammar, tabmodule="parsetabasm")
+    asmparser.errors = False
+    asmparser.const_table = {}
+    asmparser.data_table = {}
+    asmparser.inst_table = {}
+    asmparser.data_table[SIZE] = 0
+    asmparser.inst_table[SIZE] = 0
+
     ast = asmparser.parse(input_string, lexer=asmlexer)
-    asmsemantic.semantic_analysis(ast, const_table, data_table, inst_table)
-    asmcodegen.codegen(ast, data_table, inst_table)
+    asmsemantic.semantic_analysis(ast, asmparser.data_table, asmparser.inst_table)
+
+    if asmlexer.errors or asmparser.errors:
+        exit(1)
+
+    asmcodegen.codegen(ast, asmparser.data_table, asmparser.inst_table)
 
 def main():
     if len(sys.argv) < 2:
