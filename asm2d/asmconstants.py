@@ -74,6 +74,4 @@ OP_CODES = {
         }
 
 SYM_TABLE = {k:BitArray(int=v, length=8).hex.upper()
-        for k,v in zip('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', range(8, 44))}
-SYM_TABLE['@'] = '05'
-SYM_TABLE['#'] = '06'
+        for k,v in zip('@# ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,;:&|?!<^', range(5, 56))}

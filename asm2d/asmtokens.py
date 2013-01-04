@@ -105,7 +105,7 @@ t_RPAREN = r'\)'
 t_TIMES = r'\*'
 
 def t_CHAR(t):
-    r"'[A-Z0-9#@]'"
+    r"'[A-Z0-9.,;:&?!|#@<^]'"
     t.value = t.value[1]
     return t
 
