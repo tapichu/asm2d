@@ -351,7 +351,8 @@ def p_instruction_subtract_var(p):
 # TDXA, TDXB, TDYA, TDYB
 @lineno(1)
 def p_instruction_transfer(p):
-    '''instruction : TDXA
+    '''instruction : TDX
+                   | TDXA
                    | TDXB
                    | TDYA
                    | TDYB'''

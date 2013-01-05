@@ -67,6 +67,7 @@ OP_CODES = {
         'STX': {'ext': 0xFF},
         'SUBA': {'imm': 0x80, 'ext': 0xB0},
         'SUBD': {'imm': 0x83, 'ext': 0xB3},
+        'TDX': 0xF8,            # Shadows EORB
         'TDXA': 0xC5,           # Shadows BITB
         'TDXB': 0xD5,           # Shadows BITB
         'TDYA': 0xE5,           # Shadows BITB

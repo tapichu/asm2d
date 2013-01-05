@@ -85,6 +85,7 @@ tokens = (
         'SUBA',             # Subtract from accumulator A
         'SUBD',             # Subtract from double acc D
         'TIMES',            # *
+        'TDX',              # Transfer double acc D to index register X
         'TDXA',             # Transfer double acc D to game register XA
         'TDXB',             # Transfer double acc D to game register XB
         'TDYA',             # Transfer double acc D to game register YA
