@@ -38,7 +38,7 @@ def first_pass(ast, data_table, inst_table, errors):
             code_offset += elem.size
 
             if len(elem.inst) == 3:
-                name, size, label = elem.inst
+                _, _, label = elem.inst
                 if label not in inst_table:
                     error("Undefined label {}", label, lineno=elem.lineno, errors=errors)
             elif len(elem.inst) == 4:
@@ -48,6 +48,11 @@ def first_pass(ast, data_table, inst_table, errors):
                         error("Undefined variable {}", value, lineno=elem.lineno, errors=errors)
                     else:
                         elem.inst = (name, size, 'ext', data_table[value])
+            elif len(elem.inst) == 5:
+                _, _, inst_type, _, label = elem.inst
+                if inst_type == 'imm-rel':
+                    if label not in inst_table:
+                        error("Undefined label {}", label, lineno=elem.lineno, errors=errors)
 
     if '.main' in inst_table and inst_table['.main'] != MAIN_ADDR:
         error("Main label should be the first instruction",lineno=main_lineno, errors=errors)
@@ -77,7 +82,8 @@ def second_pass(ast, data_table, inst_table, errors):
                             error("Value out of range {0} (instruction {1})",
                                     value, name, lineno=elem.lineno, errors=errors)
             elif len(elem.inst) == 5:
-                name, _, _, offset, _ = elem.inst
-                if offset < -128 or offset > 127:
-                    error("Value out of range {0} (instruction {1})",
-                            offset, name, lineno=elem.lineno, errors=errors)
+                name, _, inst_type, offset, _ = elem.inst
+                if inst_type == 'ind':
+                    if offset < -128 or offset > 127:
+                        error("Value out of range {0} (instruction {1})",
+                                offset, name, lineno=elem.lineno, errors=errors)

@@ -13,6 +13,7 @@ tokens = (
         'BCS',              # Branch if carry set (same as BLO)
         'BEQ',              # Branch equal zero
         'BHI',              # Branch if higher
+        'BKE',              # Branch if key event
         'BLO',              # Branch if lower
         'BNE',              # Branch not equal zero
         'BRA',              # Branch always
@@ -35,6 +36,7 @@ tokens = (
         'INX',              # Increment register X
         'IX',               # Index Register X
         'JSR',              # Jump to subroutine
+        'KEY_ID',           # KEY_0 throught KEY_15
         'LDAA',             # Load accumulator A
         'LDAB',             # Load accumulator B
         'LDB',              # Load colour blue
@@ -125,8 +127,13 @@ def t_MAIN(t):
     return t
 
 reserved = set(tokens) - {'CHAR', 'COMMA', 'CONST_REF', 'DIVIDE', 'ENDL',\
-        'HEX_NUM', 'IDENTIFIER', 'IX', 'LPAREN', 'MINUS', 'NUM', 'PLUS',\
-        'RPAREN', 'TIMES'}
+        'HEX_NUM', 'IDENTIFIER', 'IX', 'KEY_ID', 'LPAREN', 'MINUS', 'NUM',\
+        'PLUS', 'RPAREN', 'TIMES'}
+
+def t_KEY_ID(t):
+    r'(key|KEY)_(1[0-5]|[0-9])'
+    t.value = int(t.value.split('_')[1])
+    return t
 
 def t_IDENTIFIER(t):
     r'[A-Za-z][A-Za-z0-9_]*'

@@ -181,6 +181,12 @@ def p_instruction_branch(p):
                    | BRA IDENTIFIER'''
     p[0] = (p[1], 2, p[2])
 
+# BKE
+@lineno(1)
+def p_instruction_branch_keyevent(p):
+    'instruction : BKE LPAREN KEY_ID RPAREN IDENTIFIER'
+    p[0] = (p[1], 3, 'imm-rel', p[3], p[5])
+
 # CLRS
 @lineno(1)
 def p_instruction_clrs(p):

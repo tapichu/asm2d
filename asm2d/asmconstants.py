@@ -12,6 +12,7 @@ OP_CODES = {
         'BCS': 0x25,
         'BEQ': 0x27,
         'BHI': 0x22,
+        'BKE': 0xB5,            # Shadows BITA
         'BLO': 0x25,
         'BNE': 0x26,
         'BRA': 0x20,
@@ -73,5 +74,10 @@ OP_CODES = {
         'XGDX': 0x8F
         }
 
+# Opcodes for graphic unit
 SYM_TABLE = {k:BitArray(int=v, length=8).hex.upper()
         for k,v in zip('@# ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,;:&|?!<^', range(5, 56))}
+
+# Opcodes for key press events
+KEY_TABLE = {k:BitArray(int=v, length=8).hex.upper()
+        for k,v in zip(range(0, 16), range(7, 23))}

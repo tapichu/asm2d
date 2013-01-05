@@ -4,7 +4,7 @@ from __future__ import print_function
 import math
 import sys
 from bitstring import BitArray
-from asmconstants import SIZE, OP_CODES, SYM_TABLE
+from asmconstants import KEY_TABLE, OP_CODES, SIZE, SYM_TABLE
 from asmgrammar import Inst, Var
 
 _file = sys.stdout
@@ -42,7 +42,11 @@ def codegen(ast, data_table, inst_table, no_words=None, outfile=sys.stdout):
                     codegen_extended(elem, code_offset, inst_table)
                 code_offset += elem.size
             elif len(elem.inst) == 5:
-                codegen_indexed(elem, code_offset)
+                inst_type = elem.inst[2]
+                if inst_type == 'ind':
+                    codegen_indexed(elem, code_offset)
+                elif inst_type == 'imm-rel':
+                    codegen_immediate_relative(elem, code_offset, inst_table)
                 code_offset += elem.size
 
     for elem in ast:
@@ -81,6 +85,22 @@ def codegen_immediate(elem, addr):
         start, end = i*2, (i+1)*2
         output_data(data[start:end], addr, comment=value)
         addr += 1
+
+def codegen_immediate_relative(elem, addr, inst_table):
+    """Output the memory contents of an immediate and relative instruction
+    like BKE (3 bytes).
+    """
+    inst_name, _, _, key, label = elem.inst
+    output_opcode(inst_name, elem.label, addr)
+
+    addr += 1
+    data = KEY_TABLE[key]
+    output_data(data, addr, comment="KEY_{0:d}".format(key))
+
+    addr += 1
+    relative_addr = inst_table[label] - (addr + 1)
+    data = BitArray(int=relative_addr, length=8).hex.upper()
+    output_data(data, addr, comment="{0} (rel {1:d})".format(label, relative_addr))
 
 def codegen_relative(elem, addr, inst_table):
     "Output the memory contents of a relative instruction (2 bytes)."
