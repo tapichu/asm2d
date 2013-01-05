@@ -201,6 +201,11 @@ def p_instruction_compare_expr(p):
     size = 2 if p[1] in {'CPK'} else 3
     p[0] = (p[1], size, 'imm', eval_expr(p[2], p, p.lineno(1)))
 
+@lineno(1)
+def p_instruction_compare_var(p):
+    'instruction : CPX IDENTIFIER'
+    p[0] = (p[1], 3, 'var', p[2])
+
 # DRCL, DRHLN, DRRCT, DRVLN
 @lineno(1)
 def p_instruction_draw(p):
@@ -329,17 +334,19 @@ def p_instruction_store_var(p):
                    | STX IDENTIFIER'''
     p[0] = (p[1], 3, 'var', p[2])
 
-# SUBA
+# SUBA, SUBD
 @lineno(1)
-def p_instruction_suba_var(p):
-    'instruction : SUBA IDENTIFIER'
-    p[0] = (p[1], 3, 'var', p[2])
+def p_instruction_subtract_expr(p):
+    '''instruction : SUBA expr
+                   | SUBD expr'''
+    size = 2 if p[1] in {'SUBA'} else 3
+    p[0] = (p[1], size, 'imm', eval_expr(p[2], p, p.lineno(1)))
 
-# SUBD
 @lineno(1)
-def p_instruction_subd_expr(p):
-    'instruction : SUBD expr'
-    p[0] = (p[1], 3, 'imm', eval_expr(p[2], p, p.lineno(1)))
+def p_instruction_subtract_var(p):
+    '''instruction : SUBA IDENTIFIER
+                   | SUBD IDENTIFIER'''
+    p[0] = (p[1], 3, 'var', p[2])
 
 # TDXA, TDXB, TDYA, TDYB
 @lineno(1)

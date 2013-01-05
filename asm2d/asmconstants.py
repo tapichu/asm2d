@@ -18,7 +18,7 @@ OP_CODES = {
         'BRA': 0x20,
         'CLRS': 0x95,           # Shadows BITA
         'CPK': {'imm': 0x85},   # Shadows BITA
-        'CPX': {'imm': 0x8C},
+        'CPX': {'imm': 0x8C, 'ext': 0xBC},
         'DRCL': 0x65,           # Unused opcode (in 6811)
         'DRHLN': 0x6B,          # Unused opcode (in 6811)
         'DRRCT': 0x75,          # Unused opcode (in 6811)
@@ -65,8 +65,8 @@ OP_CODES = {
         'STAB': {'ext': 0xF7, 'ind': 0xE7},
         'STD': {'ext': 0xFD},
         'STX': {'ext': 0xFF},
-        'SUBA': {'ext': 0xB0},
-        'SUBD': {'imm': 0x83},
+        'SUBA': {'imm': 0x80, 'ext': 0xB0},
+        'SUBD': {'imm': 0x83, 'ext': 0xB3},
         'TDXA': 0xC5,           # Shadows BITB
         'TDXB': 0xD5,           # Shadows BITB
         'TDYA': 0xE5,           # Shadows BITB
