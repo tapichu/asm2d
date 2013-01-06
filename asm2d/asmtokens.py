@@ -75,7 +75,7 @@ tokens = (
         'PULYA',            # Pull game register YA from stack
         'PULYB',            # Pull game register YB from stack
         'RMB',              # Reserve memory bytes
-        'RNDA',
+        'RNDA',             # Load a random number to accumulator A
         'RPAREN',           # )
         'RSTK',             # Reset the game clock
         'RTS',              # Return from subroutine
