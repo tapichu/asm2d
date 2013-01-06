@@ -75,7 +75,7 @@ def codegen_immediate(elem, addr):
     output_opcode(inst_name, elem.label, addr, code=opcode)
 
     addr += 1
-    if inst_name in {'CPK', 'LDB', 'LDG', 'LDR'}:
+    if inst_name in {'CPK', 'LDB', 'LDG', 'LDR', 'RNDA'}:
         data = BitArray(uint=value, length=(elem.size-1)*8).hex.upper()
     elif inst_name == 'DRSYM':
         data = SYM_TABLE[value]

@@ -1,7 +1,6 @@
 # Semantic analysis of an AST (parsed 68hc11 assembly code).
 
 from __future__ import print_function
-from bitstring import BitArray
 from asmconstants import SIZE
 from asmerrors import error, warn
 from asmgrammar import Inst, Var
@@ -81,12 +80,11 @@ def second_pass(ast, data_table, inst_table, errors):
         if isinstance(elem, Inst):
             if len(elem.inst) == 4:
                 name, size, inst_type, value = elem.inst
-                if name in {'CPK', 'LDB', 'LDG', 'LDR'}:
-                    if value < -128 or value > 127:
+                if name in {'CPK', 'LDB', 'LDG', 'LDR', 'RNDA'}:
+                    if value < 0 or value > 255:
                         error("Value out of range {0} (instruction {1})",
                                 value, name, lineno=elem.lineno, errors=errors)
                     else:
-                        value = BitArray(int=value, length=8).uint
                         elem.inst = (name, size, inst_type, value)
                 elif inst_type == 'imm' and name != 'DRSYM':
                     if size == 2:

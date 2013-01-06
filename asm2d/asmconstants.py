@@ -59,6 +59,7 @@ OP_CODES = {
         'PULXB': 0xCA,          # Shadows ORAB
         'PULYA': 0xDA,          # Shadows ORAB
         'PULYB': 0xEA,          # Shadows ORAB
+        'RNDA': {'imm': 0xFA},  # Shadows ORAB
         'RSTK': 0xC7,           # Unused opcode (in 6811)
         'RTS': 0x39,
         'STAA': {'ext': 0xB7, 'ind': 0xA7},

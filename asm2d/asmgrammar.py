@@ -325,6 +325,12 @@ def p_instruction_stack_pop(p):
                    | PULYB'''
     p[0] = (p[1], 1)
 
+# RNDA
+@lineno(1)
+def p_instruction_random(p):
+    'instruction : RNDA expr'
+    p[0] = (p[1], 2, 'imm', eval_expr(p[2], p, p.lineno(1)))
+
 # RSTK
 @lineno(1)
 def p_instruction_rstk(p):
