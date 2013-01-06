@@ -11,7 +11,7 @@ def test_codegen(input_string):
     asmparser = asmutil.create_parser(errors, debug=True)
 
     ast = asmparser.parse(input_string, lexer=asmlexer)
-    asmsemantic.analyse(ast, asmparser.data_table, asmparser.inst_table, errors)
+    asmsemantic.analyse(ast, asmparser.const_table, asmparser.data_table, asmparser.inst_table, errors)
 
     asmcodegen.codegen(ast, asmparser.data_table, asmparser.inst_table)
 

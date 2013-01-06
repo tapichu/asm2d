@@ -11,9 +11,9 @@ def test_semantic_analysis(input_string):
     asmparser = asmutil.create_parser(errors, debug=True)
 
     ast = asmparser.parse(input_string, lexer=asmlexer)
-    asmsemantic.analyse(ast, asmparser.data_table, asmparser.inst_table, errors)
+    asmsemantic.analyse(ast, asmparser.const_table, asmparser.data_table, asmparser.inst_table, errors)
 
-    return (ast, asmparser.data_table, asmparser.inst_table)
+    return (ast, asmparser.const_table, asmparser.data_table, asmparser.inst_table)
 
 def main():
     if len(sys.argv) < 2:
@@ -24,9 +24,10 @@ def main():
     with open(file_name) as f:
         contents = f.read()
 
-    ast, data_table, inst_table = test_semantic_analysis(contents)
+    ast, const_table, data_table, inst_table = test_semantic_analysis(contents)
 
     pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(const_table)
     pp.pprint(data_table)
     pp.pprint(inst_table)
     pp.pprint(ast)

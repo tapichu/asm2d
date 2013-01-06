@@ -9,15 +9,28 @@ from asmtokens import tokens
 
 # AST nodes
 
+class Const:
+    "AST node for a constant."
+    def __init__(self, id, value, lineno):
+        self.id = id
+        self.value = value
+        self.used = False
+        self.lineno = lineno
+    def __repr__(self):
+        return "Const<Id: '{0}', Value: {1}, Used: {2}, Line: {3:d}>"\
+                .format(self.id, self.value, self.used, self.lineno)
+
 class Var:
     "AST node for a variable."
     def __init__(self, id, size, lineno):
         self.id = id
         self.size = size
+        self.addr = -1
+        self.used = False
         self.lineno = lineno
     def __repr__(self):
-        return "Var<Id: '{0}', Size: {1:d}, Line: {2:d}>"\
-                .format(self.id, self.size, self.lineno)
+        return "Var<Id: '{0}', Size: {1:d}, Addr: {2:d}, Used: {3}, Line: {4:d}>"\
+                .format(self.id, self.size, self.addr, self.used, self.lineno)
 
 class Inst:
     "AST node for an instruction."
@@ -25,10 +38,16 @@ class Inst:
         self.label = label
         self.inst = inst
         self.size = size
+        self.addr = -1
+        self.used = False if label != '.main' else True
         self.lineno = lineno
     def __repr__(self):
-        return "Inst<Label: '{0}', Size: {1:d}, Line: {2:d}, Detail: {3!r}>"\
-                .format(self.label, self.size, self.lineno, str(self.inst))
+        if self.label != '':
+            return "Inst<Label: '{0}', Size: {1:d}, Addr: {2:d}, Used: {3}, Line: {4:d}, Detail: {5!r}>"\
+                    .format(self.label, self.size, self.addr, self.used, self.lineno, str(self.inst))
+        else:
+            return "Inst<Label: '{0}', Size: {1:d}, Addr: {2:d}, Line: {3:d}, Detail: {4!r}>"\
+                    .format(self.label, self.size, self.addr, self.lineno, str(self.inst))
 
 
 # Helper decorator
@@ -73,7 +92,7 @@ def p_element_declaration_constant(p):
     if name in p.parser.const_table:
         warn("Overriding already defined constant {0}", name, lineno=lineno)
     try:
-        p.parser.const_table[name] = eval_expr(p[3], p, lineno)
+        p.parser.const_table[name] = Const(name, eval_expr(p[3], p, lineno), lineno)
     except SyntaxError: pass
     pass
 
@@ -85,10 +104,9 @@ def p_element_declaration_variable(p):
     if size <= 0:
         error("Error in variable declaration {0}: the number of bytes must be greater than zero",
                 name, lineno=lineno, errors=p.parser.errors)
-    p.parser.data_table[name] = -1
-    p.parser.data_table[SIZE] += size
-
     p[0] = Var(p[1], p[3], lineno)
+    p.parser.data_table[name] = p[0]
+    p.parser.data_table[SIZE] += size
 
 def p_element_declaration_error(p):
     'element : IDENTIFIER error expr'
@@ -100,9 +118,9 @@ def p_element_instruction_label(p):
     name, size, lineno = p[1], p[2][1], p.lineno(1)
     if name in p.parser.inst_table:
         error("Duplicate label definition: {0}", name, lineno=lineno, errors=p.parser.errors)
-    p.parser.inst_table[name] = -1
-    p.parser.inst_table[SIZE] += size
     p[0] = Inst(p[1], p[2], p[2][1], p.lineno(1))
+    p.parser.inst_table[name] = p[0]
+    p.parser.inst_table[SIZE] += size
 
 def p_element_instruction_label_error(p):
     'element : IDENTIFIER error'
@@ -381,7 +399,8 @@ def eval_expr(ast, p, lineno):
         if name not in p.parser.const_table:
             error("Undefined constant {0}", name, lineno=lineno, errors=p.parser.errors)
             raise SyntaxError
-        return p.parser.const_table[name]
+        p.parser.const_table[name].used = True
+        return p.parser.const_table[name].value
     elif expr_type == '+':
         return eval_expr(ast[1], p, lineno) + eval_expr(ast[2], p, lineno)
     elif expr_type == '-':

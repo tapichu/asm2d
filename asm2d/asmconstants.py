@@ -1,6 +1,6 @@
 from bitstring import BitArray
 
-SIZE = '__SIZE'
+SIZE = '___SIZE___'
 
 # http://home.earthlink.net/~tdickens/68hc11/68hc11_opcode_map.html
 

@@ -3,25 +3,26 @@
 from __future__ import print_function
 from bitstring import BitArray
 from asmconstants import SIZE
-from asmerrors import error
+from asmerrors import error, warn
 from asmgrammar import Inst, Var
 
 MAIN_ADDR = 0
 
-def analyse(ast, data_table, inst_table, errors):
+def analyse(ast, const_table, data_table, inst_table, errors):
     "Semantic analysis for the AST."
 
     if '.main' not in inst_table:
         error("Main entry point not defined", errors=errors)
 
-    first_pass(ast, data_table, inst_table, errors)
+    first_pass(ast, const_table, data_table, inst_table, errors)
     second_pass(ast, data_table, inst_table, errors)
 
     errors.report_errors()
 
-def first_pass(ast, data_table, inst_table, errors):
+def first_pass(ast, const_table, data_table, inst_table, errors):
     """The first pass assigns an address to variables (data segment) and
-    labels, and checks for undefined references.
+    labels, and checks for undefined references. It also warns about constants,
+    variables and labels that are not used.
     """
     data_offset = inst_table[SIZE]
     code_offset = 0
@@ -29,32 +30,47 @@ def first_pass(ast, data_table, inst_table, errors):
 
     for elem in ast:
         if isinstance(elem, Var):
-            data_table[elem.id] = data_offset
+            data_table[elem.id].addr = data_offset
             data_offset += elem.size
         if isinstance(elem, Inst):
             if elem.label != '':
                 if elem.label == '.main': main_lineno = elem.lineno
-                inst_table[elem.label] = code_offset
+                inst_table[elem.label].addr = code_offset
             code_offset += elem.size
 
             if len(elem.inst) == 3:
                 _, _, label = elem.inst
                 if label not in inst_table:
                     error("Undefined label {}", label, lineno=elem.lineno, errors=errors)
+                else:
+                    inst_table[label].used = True
             elif len(elem.inst) == 4:
                 name, size, inst_type, value = elem.inst
                 if inst_type == 'var':
                     if value not in data_table:
                         error("Undefined variable {}", value, lineno=elem.lineno, errors=errors)
                     else:
-                        elem.inst = (name, size, 'ext', data_table[value])
+                        data_table[value].used = True
+                        elem.inst = (name, size, 'ext', data_table[value].addr)
             elif len(elem.inst) == 5:
                 _, _, inst_type, _, label = elem.inst
                 if inst_type == 'imm-rel':
                     if label not in inst_table:
                         error("Undefined label {}", label, lineno=elem.lineno, errors=errors)
+                    else:
+                        inst_table[label].used = True
 
-    if '.main' in inst_table and inst_table['.main'] != MAIN_ADDR:
+    # Warnings for unused constants, variables and labels
+    for const in [k for k in const_table if const_table[k].used == False]:
+        warn("Unused constant {}", const, lineno=const_table[const].lineno)
+
+    for var in [k for k in data_table if k != SIZE and data_table[k].used == False]:
+        warn("Unused variable {}", var, lineno=data_table[var].lineno)
+
+    for label in [k for k in inst_table if k != SIZE and inst_table[k].used == False]:
+        warn("Unused label {}", label, lineno=inst_table[label].lineno)
+
+    if '.main' in inst_table and inst_table['.main'].addr != MAIN_ADDR:
         error("Main label should be the first instruction",lineno=main_lineno, errors=errors)
 
 def second_pass(ast, data_table, inst_table, errors):

@@ -98,7 +98,7 @@ def codegen_immediate_relative(elem, addr, inst_table):
     output_data(data, addr, comment="KEY_{0:d}".format(key))
 
     addr += 1
-    relative_addr = inst_table[label] - (addr + 1)
+    relative_addr = inst_table[label].addr - (addr + 1)
     data = BitArray(int=relative_addr, length=8).hex.upper()
     output_data(data, addr, comment="{0} (rel {1:d})".format(label, relative_addr))
 
@@ -108,7 +108,7 @@ def codegen_relative(elem, addr, inst_table):
     output_opcode(inst_name, elem.label, addr)
 
     addr += 1
-    relative_addr = inst_table[label] - (addr + 1)
+    relative_addr = inst_table[label].addr - (addr + 1)
     data = BitArray(int=relative_addr, length=8).hex.upper()
     output_data(data, addr, comment="{0} (rel {1:d})".format(label, relative_addr))
 
@@ -126,7 +126,7 @@ def codegen_extended(elem, addr, inst_table):
     "Output the memory contents of an extended instruction (3 bytes)."
     if len(elem.inst) == 3:
         inst_name, _, label = elem.inst
-        next_addr = inst_table[label]
+        next_addr = inst_table[label].addr
         data = BitArray(uint=next_addr, length=16).hex.upper()
         output_opcode(inst_name, elem.label, addr)
 

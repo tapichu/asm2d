@@ -34,7 +34,7 @@ def run_compiler(input_file, output_file, no_words):
     input_string = read_file(input_file)
     ast = asmparser.parse(input_string, lexer=asmlexer)
 
-    asmsemantic.analyse(ast, asmparser.data_table, asmparser.inst_table, errors)
+    asmsemantic.analyse(ast, asmparser.const_table, asmparser.data_table, asmparser.inst_table, errors)
 
     with open(output_file, 'w+') as f:
         asmcodegen.codegen(ast, asmparser.data_table, asmparser.inst_table, no_words=no_words, outfile=f)
