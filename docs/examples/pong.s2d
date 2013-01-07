@@ -2,235 +2,1077 @@
 ; Pong implementation for the 68112D microprocessor
 ;*******************************************************************************
 
-; Constants
+;;------------------------------------------------------------------------------
+;; CONSTANTS
+;;------------------------------------------------------------------------------
 
-FPS                 EQU       30
+FPS                 EQU     120
 
-WIN_WIDTH           EQU       640
-WIN_HEIGHT          EQU       480
+GAME_LEVEL_INIT     EQU     8
+COLL_NEXT_LEVEL     EQU     7
 
-WALL_TOP            EQU       15
-WALL_BOTTOM         EQU       #WIN_HEIGHT - #WALL_TOP
+WIN_WIDTH           EQU     640
+WIN_HEIGHT          EQU     480
 
-WIN_HEIGHT_NO_WALLS EQU       #WIN_HEIGHT - 2 * #WALL_TOP
+WALL_TOP            EQU     15
+WALL_BOTTOM         EQU     #WIN_HEIGHT - #WALL_TOP
 
-CELL_SIZE           EQU       32
-CELL_WIDTH          EQU       #WIN_WIDTH / #CELL_SIZE   ; Warning: must be a multiple
-CELL_HEIGHT         EQU       #WIN_HEIGHT / #CELL_SIZE  ; Warning: must be a multiple
+CELL_SIZE           EQU     32
+CELL_WIDTH          EQU     #WIN_WIDTH / #CELL_SIZE   ; Warning: must be a multiple
+CELL_HEIGHT         EQU     #WIN_HEIGHT / #CELL_SIZE  ; Warning: must be a multiple
 
-PAD_HEIGHT          EQU       60
-PAD_WIDTH           EQU       14
-PAD_INIT_Y          EQU       #WIN_HEIGHT / 2 - #PAD_HEIGHT / 2
-PAD_SPEED           EQU       30
+PAD_HEIGHT          EQU     60
+PAD_WIDTH           EQU     14
+PAD_TOP             EQU     #WALL_TOP + #PAD_WIDTH / 2 + 1
+PAD_BOTTOM          EQU     #WALL_BOTTOM - #PAD_HEIGHT - #PAD_WIDTH / 2
+PAD_INIT_Y          EQU     #WIN_HEIGHT / 2 - #PAD_HEIGHT / 2 + 3
+PAD_SPEED           EQU     5
 
-P1_PAD_X            EQU       #CELL_SIZE - #PAD_WIDTH / 2
-CPU_PAD_X           EQU       #WIN_WIDTH - #CELL_SIZE - #PAD_WIDTH / 2
+P1_PAD_X            EQU     0
+CPU_PAD_X           EQU     #WIN_WIDTH - #PAD_WIDTH
 
-BALL_RADIUS         EQU       3
-INIT_SPEED          EQU       15
+BALL_RADIUS         EQU     12
+INIT_SPEED          EQU     10
 
-EXIT_LEFT           EQU       -3 * #BALL_RADIUS
-EXIT_RIGHT          EQU       #WIN_WIDTH + 3 * #BALL_RADIUS
+EXIT_LEFT           EQU     #WIN_WIDTH - 7 * #BALL_RADIUS
+EXIT_RIGHT          EQU     2 * #WIN_WIDTH + 5 * #BALL_RADIUS
+COLLISION_TOLERA    EQU     5
 
+TEXT_Y              EQU     #WIN_HEIGHT / 2 - 6
+LINE_SPACE          EQU     10
+CHAR_SPACE          EQU     6
 
-; Variables
-
-P1_PAD_Y            RMB       2           ; Two bytes
-CPU_PAD_Y           RMB       2           ; Two bytes
-
-BALL_X              RMB       2           ; Two bytes
-BALL_Y              RMB       2           ; Two bytes
-
-SPEED_X             RMB       1           ; One byte
-SPEED_Y             RMB       1           ; One byte
-
-COLL_COUNT          RMB       1           ; One byte
+COUNTER_ANIM_INIT   EQU     10
 
 
-; Main
+;;------------------------------------------------------------------------------
+;; VARIABLES
+;;------------------------------------------------------------------------------
 
-.main               LDX       #PAD_INIT_Y
-                    STX       P1_PAD_Y
-                    STX       CPU_PAD_Y
+GAME_LEVEL          RMB     2
 
-                    JSR       START_GAME
-                    RSTK                            ; reset the game clock
+P1_PAD_Y            RMB     2
+CPU_PAD_Y           RMB     2
 
-MAIN_LOOP           JSR       DRAW_GRID
-                    JSR       DRAW_BALL
-                    JSR       DRAW_PAD
-                    JSR       DRAW_WALLS
+BALL_X              RMB     2
+BALL_Y              RMB     2
 
-FPS_LOOP            CPK       #FPS                  ; compare game clock
-                    BNE       FPS_LOOP
-                    RSTK                            ; reset the game clock
+SPEED_X             RMB     1
+SPEED_Y             RMB     1
 
-                    BRA       MAIN_LOOP
+COLL_COUNT          RMB     1
+COLL_DISABLED       RMB     1
+
+COUNTER_END         RMB     2
+COUNTER_ANIM        RMB     1
+TOGGLE_ANIM         RMB     1
+
+LINE_POS            RMB     2
+
+PACMAN              RMB     2
+GHOST               RMB     2
+
+TEMP                RMB     2
+TEMP1               RMB     2
+TEMP_PC             RMB     2
+
+
+;;------------------------------------------------------------------------------
+;; MAIN
+;;------------------------------------------------------------------------------
+
+.main               LDX     #PAD_INIT_Y
+                    STX     P1_PAD_Y
+                    STX     CPU_PAD_Y
+                    LDX     #GAME_LEVEL_INIT
+                    STX     GAME_LEVEL
+
+                    JSR     START_GAME
+                    RSTK
+
+MAIN_LOOP           CLRS
+
+                    JSR     DRAW_GRID
+                    JSR     DRAW_PAD
+                    JSR     DRAW_WALLS
+                    JSR     DRAW_BALL
+
+                    ; Update the state of the game
+                    JSR     CHECK_EVENTS
+                    JSR     CPU_AI
+
+FPS_LOOP            CPK     #FPS
+                    BNE     FPS_LOOP
+                    RSTK
+
+                    BRA     MAIN_LOOP
 ; End MAIN
 
 
-; Subroutines
+;;------------------------------------------------------------------------------
+;; INIT
+;;------------------------------------------------------------------------------
 
 ; Set the ball in it's starting position
-START_GAME          LDX       #WIN_WIDTH / 2
-                    STX       BALL_X
-                    LDX       #WIN_HEIGHT / 2
-                    STX       BALL_Y
+START_GAME          PSHX
+                    PSHA
 
-                    LDAA      $08                   ; 6 TODO: randomize
-                    STAA      SPEED_X
-                    LDAA      $07                   ; 4 TODO: INIT_SPEED - SPEED_X
-                    STAA      SPEED_Y
+                    LDX     #WIN_WIDTH + #WIN_WIDTH / 2
+                    STX     BALL_X
+                    LDX     #WIN_HEIGHT / 2
+                    STX     BALL_Y
 
-                    LDX       $0000
-                    STX       COLL_COUNT
-                    RTS                             ; Return from subroutine
+                    RNDA    4
+                    LDAB    5
+                    ABA
+                    STAA    SPEED_X
+
+                    LDAA    #INIT_SPEED
+                    SUBA    SPEED_X
+                    STAA    SPEED_Y
+
+                    RNDA    2
+                    SUBA    0
+                    BEQ     CONTINUE
+                    LDAA    SPEED_Y
+                    NEGA
+                    STAA    SPEED_Y
+
+CONTINUE            LDAA    #COLL_NEXT_LEVEL
+                    STAA    COLL_COUNT
+                    LDAA    $00
+                    STAA    COLL_DISABLED
+
+                    PULA
+                    PULX
+                    RTS
 ; End START_GAME
 
 
-DRAW_GRID           CLRS                            ; clear the screen
+;;------------------------------------------------------------------------------
+;; SCENE
+;;------------------------------------------------------------------------------
 
-                    LDR       $00                   ; TODO: remove this
-                    LDG       $00                   ; Temporarily clears the screen
-                    LDB       $00
-                    LDXA      $0000
-                    LDYA      #WALL_TOP
-                    LDXB      #WIN_WIDTH
-                    LDYB      #WIN_HEIGHT_NO_WALLS
-                    DRRCT
+DRAW_GRID           LDR     $00
+                    LDG     $00
+                    LDB     $01
 
-                    LDR       $01                   ; Gray
-                    LDG       $01
-                    LDB       $01
+                    LDYA    #WALL_TOP
+                    LDXB    #WIN_HEIGHT - 2 * #WALL_TOP ; line len
+                    LDD     #WIN_WIDTH
+DG_LOOP_V           BEQ     DG_LOOP_V_DONE
+                    TDXA
+                    DRVLN
+                    SUBD    #CELL_SIZE
+                    BRA     DG_LOOP_V
 
-                    LDYA      #WALL_TOP
-                    LDXB      #WIN_HEIGHT_NO_WALLS  ; line width
-                    LDD       #WIN_WIDTH
-DG_LOOP_V           BEQ       DG_LOOP_V_DONE
-                    TDXA                            ; Transfer register D to XA
-                    DRVLN                           ; Draw vertical line
-                    SUBD      #CELL_SIZE
-                    BRA       DG_LOOP_V
-
-DG_LOOP_V_DONE      LDXA      $0000
-                    LDXB      #WIN_WIDTH            ; line width
-                    LDD       #WIN_HEIGHT
-DG_LOOP_H           BEQ       DG_LOOP_H_DONE
-                    TDYA                            ; Transfer register D to YA
+DG_LOOP_V_DONE      LDXA    $0000
+                    LDXB    #WIN_WIDTH      ; line len
+                    LDD     #WIN_HEIGHT
+DG_LOOP_H           BEQ     DG_LOOP_H_DONE
+                    TDYA
                     DRHLN
-                    SUBD      #CELL_SIZE
-                    BRA       DG_LOOP_H
+                    SUBD    #CELL_SIZE
+                    BRA     DG_LOOP_H
+
 DG_LOOP_H_DONE      RTS
 ; End DRAW_GRID
 
 
-DRAW_WALLS          LDR       $02                   ; Dark gray
-                    LDG       $02
-                    LDB       $02
+DRAW_WALLS          LDR     $01
+                    LDG     $01
+                    LDB     $01
 
-                    LDXA      $0000
-                    LDYA      $0000
-                    LDXB      #WIN_WIDTH
-                    LDYB      #WALL_TOP
-                    DRRCT                           ; Draw rect
+                    LDXA    $0000
+                    LDYA    $0000
+                    LDXB    #WIN_WIDTH
+                    LDYB    #WALL_TOP
+                    DRRCT
 
-                    LDYA      #WALL_BOTTOM
-                    DRRCT                           ; Draw rect
+                    LDYA    #WALL_BOTTOM
+                    DRRCT
                     RTS
 ; End DRAW_WALLS
 
 
-DRAW_PAD            LDR       $00                   ; Green
-                    LDG       $03
-                    LDB       $00
+;;------------------------------------------------------------------------------
+;; PADDLES
+;;------------------------------------------------------------------------------
 
-                    LDXA      #P1_PAD_X
-                    LDYA      P1_PAD_Y
-                    LDXB      #PAD_WIDTH            ; Rectangle length
-                    LDYB      #PAD_HEIGHT           ; Rectangle width
+DRAW_PAD            PSHA
+                    PSHB
+
+                    LDR     $00     ; Aqua
+                    LDG     $01
+                    LDB     $01
+
+                    JSR     PAD_BOUNDARIES
+
+                    LDXA    #P1_PAD_X
+                    LDYA    P1_PAD_Y
+                    LDXB    #PAD_WIDTH      ; Rectangle length
+                    LDYB    #PAD_HEIGHT     ; Rectangle width
                     DRRCT
 
-                    LDXA      #CPU_PAD_X
-                    LDYA      CPU_PAD_Y
+                    PSHXB
+                    PSHYB
+                    PSHA
+                    PSHB
+
+                    LDXA    #P1_PAD_X + #PAD_WIDTH / 2 - 2
+                    LDD     P1_PAD_Y
+                    SUBD    2
+                    TDYA
+                    LDXB    #PAD_WIDTH / 2 + 1
+                    DRCL
+
+                    ADDD    #PAD_HEIGHT
+                    TDYA
+                    DRCL
+
+                    PULB
+                    PULA
+                    PULYB
+                    PULXB
+
+                    LDXA    #CPU_PAD_X
+                    LDYA    CPU_PAD_Y
                     DRRCT
+
+                    LDXA    #CPU_PAD_X + #PAD_WIDTH / 2 - 1
+                    LDYA    CPU_PAD_Y
+                    LDXB    #PAD_WIDTH / 2 + 1
+                    DRCL
+
+                    LDD     CPU_PAD_Y
+                    ADDD    #PAD_HEIGHT
+                    TDYA
+                    DRCL
+
+                    PULB
+                    PULA
                     RTS
 ; End DRAW_PAD
 
 
-DRAW_BALL           LDX       BALL_X
-                    LDAB      SPEED_X
+PAD_BOUNDARIES      PSHX
+
+                    LDX     P1_PAD_Y
+                    PSHX
+                    LDX     #PAD_TOP
+                    PSHX
+                    LDX     #PAD_BOTTOM
+                    PSHX
+                    JSR     IN_BETWEEN
+                    PULX
+                    STX     P1_PAD_Y
+
+                    LDX     CPU_PAD_Y
+                    PSHX
+                    LDX     #PAD_TOP - 2
+                    PSHX
+                    LDX     #PAD_BOTTOM - 2
+                    PSHX
+                    JSR     IN_BETWEEN
+                    PULX
+                    STX     CPU_PAD_Y
+
+                    PULX
+                    RTS
+
+
+;;------------------------------------------------------------------------------
+;; BALL MOVEMENT
+;;------------------------------------------------------------------------------
+
+DRAW_BALL           PSHX
+                    PSHB
+
+                    LDX     BALL_X
+                    LDAB    SPEED_X
                     ABX
-                    STX       BALL_X                ; BALL_X += SPEED_X
+                    STX     BALL_X      ; BALL_X += SPEED_X
 
-                    LDX       BALL_Y
-                    LDAB      SPEED_Y
+                    LDX     BALL_Y
+                    LDAB    SPEED_Y
                     ABX
-                    STX       BALL_Y                ; BALL_Y += SPEED_Y
+                    STX     BALL_Y      ; BALL_Y += SPEED_Y
 
-                    JSR       WALL_COLLISIONS
-                    JSR       EXIT_COLLISIONS
-                    JSR       PAD_COLLISIONS
-                    JSR       UPDATE_SPEED
+                    JSR     WALL_COLLISIONS
+                    JSR     EXIT_COLLISIONS
+                    JSR     PAD_COLLISIONS
+                    JSR     UPDATE_SPEED
+                    JSR     BALL_BOUNDARIES
 
-                    LDR       $00                   ; Blue
-                    LDG       $00
-                    LDB       $03
+                    LDR     $01
+                    LDG     $00
+                    LDB     $00
 
-                    LDXA      BALL_X
-                    LDYA      BALL_Y
-                    LDXB      #BALL_RADIUS
-                    DRCL                            ; Draw circle (XA, YA), radius XB
+                    LDD     BALL_X
+                    SUBD    #WIN_WIDTH
+                    TDXA
+                    LDYA    BALL_Y
+                    LDXB    #BALL_RADIUS
+                    DRCL
 
+                    PULB
+                    PULX
                     RTS
 ; End DRAW BALL
 
 
-WALL_COLLISIONS     LDX       BALL_Y
-                    CPX       #WALL_TOP + #BALL_RADIUS
-                    BHI       TEST_BOTTOM
-                    BRA       CHANGE_DIR_Y          ; BALL_Y <= WALL_TOP + BALL_RADIUS or
-TEST_BOTTOM         CPX       #WALL_BOTTOM - #BALL_RADIUS
-                    BLO       END_WALL_COLL
-CHANGE_DIR_Y        LDAA      SPEED_Y               ; BALL_Y >= WALL_BOTTOM - BALL_RADIUS
+BALL_BOUNDARIES     PSHX
+
+                    LDX     BALL_Y
+                    PSHX
+                    LDX     #WALL_TOP + #BALL_RADIUS
+                    PSHX
+                    LDX     #WALL_BOTTOM - #BALL_RADIUS
+                    PSHX
+                    JSR     IN_BETWEEN
+                    PULX
+                    STX     BALL_Y
+
+                    PULX
+                    RTS
+; End BALL_BOUNDARIES
+
+
+BALL_PAD_BOUNDARIES PSHX
+
+                    LDX     BALL_X
+                    PSHX
+                    LDX     #WIN_WIDTH + #PAD_WIDTH + #BALL_RADIUS - 2
+                    PSHX
+                    LDX     #WIN_WIDTH * 2 - #PAD_WIDTH - #BALL_RADIUS - 2
+                    PSHX
+                    JSR     IN_BETWEEN
+                    PULX
+                    STX     BALL_X
+
+                    PULX
+                    RTS
+; End BALL_PAD_BOUNDARIES
+
+
+;;------------------------------------------------------------------------------
+;; WALL COLLISIONS
+;;------------------------------------------------------------------------------
+
+WALL_COLLISIONS     PSHX
+                    PSHA
+
+                    LDX     BALL_Y
+                    CPX     #WALL_TOP + #BALL_RADIUS
+                    BHI     TEST_BOTTOM
+                    BRA     CHANGE_DIR_Y        ; BALL_Y <= WALL_TOP + BALL_RADIUS or
+TEST_BOTTOM         CPX     #WALL_BOTTOM - #BALL_RADIUS
+                    BLO     END_WALL_COLL
+CHANGE_DIR_Y        LDAA    SPEED_Y             ; BALL_Y >= WALL_BOTTOM - BALL_RADIUS
                     NEGA
-                    STAA      SPEED_Y
-END_WALL_COLL       RTS
+                    STAA    SPEED_Y
+
+END_WALL_COLL       PULA
+                    PULX
+                    RTS
 ; End WALL_COLLISIONS
 
 
-EXIT_COLLISIONS     LDX       BALL_X
-                    CPX       #EXIT_LEFT
-                    BHI       TEST_RIGHT
-                    BRA       CHANGE_DIR_X          ; BALL_X <= -2 * BALL_RADIUS
-TEST_RIGHT          CPX       #EXIT_RIGHT
-                    BLO       END_EXIT_COLL
-; TODO: change this for wait and START_GAME call (only paddles change x direction)
-CHANGE_DIR_X        LDAA      SPEED_X               ; BALL_X >= WIN_WIDTH + 2 * BALL_RADIUS
-                    NEGA
-                    STAA      SPEED_X
-END_EXIT_COLL       RTS
-; End EXIT_COLLISIONS
+;;------------------------------------------------------------------------------
+;; PADDLE COLLISIONS
+;;------------------------------------------------------------------------------
 
+PAD_COLLISIONS      PSHX
+                    PSHA
+                    PSHB
 
-PAD_COLLISIONS      RTS                             ; TODO: implement this
+                    LDAA    COLL_DISABLED
+                    BNE     SKIP_COLLISIONS
+
+                    ; CPU pad collision
+                    LDX     #WIN_WIDTH * 2 - #PAD_WIDTH - #BALL_RADIUS
+                    PSHX    ; left
+                    LDX     #WIN_WIDTH * 2 - #BALL_RADIUS + #COLLISION_TOLERA
+                    PSHX    ; right
+                    LDD     CPU_PAD_Y
+                    SUBD    #PAD_WIDTH / 2 + #COLLISION_TOLERA  ; Radius
+                    PSHB
+                    PSHA    ; top
+                    ADDD    #PAD_WIDTH + #PAD_HEIGHT + 2 * #COLLISION_TOLERA
+                    PSHB
+                    PSHA    ; bottom
+                    JSR     CHECK_PAD_COLLISION
+
+                    ; P1 pad collision
+                    LDX     #WIN_WIDTH + #BALL_RADIUS - #COLLISION_TOLERA
+                    PSHX    ; left
+                    LDX     #WIN_WIDTH + #PAD_WIDTH + #BALL_RADIUS
+                    PSHX    ; right
+                    LDD     P1_PAD_Y
+                    SUBD    #PAD_WIDTH / 2 + #COLLISION_TOLERA  ; Radius
+                    PSHB
+                    PSHA    ; top
+                    ADDD    #PAD_WIDTH + #PAD_HEIGHT + 2 * #COLLISION_TOLERA
+                    PSHB
+                    PSHA    ; bottom
+                    JSR     CHECK_PAD_COLLISION
+                    BRA     END_PAD_COLLISIONS
+
+SKIP_COLLISIONS     LDAB    -1
+                    ABA
+                    STAA    COLL_DISABLED
+
+END_PAD_COLLISIONS  PULB
+                    PULA
+                    PULX
+                    RTS
 ; End PAD_COLLISIONS
 
+;; This subroutines expects the left, right, top and bottom boundries to be in
+;; the stack (in that order, so bottom will be popped first).
+CHECK_PAD_COLLISION PULA
+                    PULB    ; Program counter
 
-UPDATE_SPEED        LDX       COLL_COUNT
-                    CPX       $0005                 ; COLL_COUNT == 5
-                    BNE       UPDATE_SPEED_END
+                    PULX    ; bottom
+                    CPX     BALL_Y
+                    BLO     END_CPC_1
 
-                    LDD       SPEED_X
-                    ASRD                            ; D = SPEED_X / 2
-                    ADDD      SPEED_X
-                    STD       SPEED_X               ; SPEED_X += SPEED_X / 2
+                    PULX    ; top
+                    CPX     BALL_Y
+                    BHI     END_CPC_2
 
-                    LDD       SPEED_Y
-                    ASRD                            ; D = SPEED_Y / 2
-                    ADDD      SPEED_Y
-                    STD       SPEED_Y               ; SPEED_Y += SPEED_Y / 2
+                    PULX    ; right
+                    CPX     BALL_X
+                    BLO     END_CPC_3
 
-                    LDX       $0000
-                    STX       COLL_COUNT            ; COLL_COUNT = 0
+                    PULX    ; left
+                    CPX     BALL_X
+                    BHI     END_CPC_4
 
-UPDATE_SPEED_END    RTS
+                    ; Change the direction of the X component
+                    PSHB
+                    PSHA
+
+                    LDAA    SPEED_X
+                    NEGA
+                    STAA    SPEED_X
+
+                    LDAA    COLL_COUNT
+                    SUBA    1
+                    STAA    COLL_COUNT
+
+                    ; Disable collision checks for the next 10 frames
+                    LDAA    10
+                    STAA    COLL_DISABLED
+
+                    JSR     BALL_PAD_BOUNDARIES
+
+                    PULA
+                    PULB
+
+                    BRA     END_CPC_4
+
+END_CPC_1           PULX
+END_CPC_2           PULX
+END_CPC_3           PULX
+END_CPC_4           PSHB
+                    PSHA
+                    RTS
+
+
+;;------------------------------------------------------------------------------
+;; GAME OVER??
+;;------------------------------------------------------------------------------
+
+EXIT_COLLISIONS     PSHX
+
+                    LDX     BALL_X
+                    CPX     #EXIT_LEFT
+                    BLO     CPU_WINS
+
+                    CPX     #EXIT_RIGHT
+                    BHI     P1_WINS
+                    BRA     END_EXIT_COLL
+
+CPU_WINS            JSR     GAME_OVER
+                    JSR     START_GAME
+                    BRA     END_EXIT_COLL
+
+P1_WINS             JSR     YOU_WIN
+                    JSR     START_GAME
+
+END_EXIT_COLL       PULX
+                    RTS
+
+
+;;------------------------------------------------------------------------------
+;; SPEED UP!
+;;------------------------------------------------------------------------------
+
+
+UPDATE_SPEED        PSHA
+
+                    LDAA    COLL_COUNT
+                    BNE     UPDATE_SPEED_END
+
+                    LDAA    #COLL_NEXT_LEVEL
+                    STAA    COLL_COUNT
+
+                    LDAA    SPEED_X
+                    PSHA
+                    JSR     INCREMENT_SPEED
+                    PULA
+                    STAA    SPEED_X
+
+                    LDAA    SPEED_Y
+                    PSHA
+                    JSR     INCREMENT_SPEED
+                    PULA
+                    STAA    SPEED_Y
+
+UPDATE_SPEED_END    PULA
+                    RTS
+
+
+;; This function receives a speed, and increments it (or decrements if it's a
+;; neative number). The new speed is returned in the stack.
+
+INCREMENT_SPEED     PULA
+                    PULB
+                    STD     TEMP_PC
+
+                    PULA    ; Speed
+                    SUBA    0
+                    BMI     DECREMENT_SPEED
+
+                    ; Increment speed
+                    LDAB    2
+                    ABA
+                    BRA     END_INCREMENT_SPEED
+
+DECREMENT_SPEED     SUBA    2
+
+END_INCREMENT_SPEED PSHA
+
+                    LDD     TEMP_PC
+                    PSHB
+                    PSHA
+                    RTS
+
+
+;;------------------------------------------------------------------------------
+;; EXTERNAL EVENTS
+;;------------------------------------------------------------------------------
+
+CHECK_EVENTS        PSHA
+                    PSHB
+
+                    BKE     (KEY_1)  MOVE_UP    ; Button KEY1
+                    BKE     (KEY_2)  MOVE_DOWN  ; Button KEY2
+                    BKE     (KEY_11) MOVE_UP    ; IR Channel Up
+                    BKE     (KEY_10) MOVE_DOWN  ; IR Channel Down
+                    BKE     (KEY_9)  INC_LEVEL  ; IR Volume UP
+                    BKE     (KEY_8)  DEC_LEVEL  ; IR Volume Down
+                    BRA     END_CHECK_EVENTS
+
+MOVE_DOWN           LDD     P1_PAD_Y
+                    ADDD    #PAD_SPEED
+                    STD     P1_PAD_Y
+                    BRA     END_CHECK_EVENTS
+
+MOVE_UP             LDD     P1_PAD_Y
+                    SUBD    #PAD_SPEED
+                    STD     P1_PAD_Y
+                    BRA     END_CHECK_EVENTS
+
+INC_LEVEL           PSHX
+                    LDD     GAME_LEVEL
+                    TDX
+                    CPX     20
+                    BHI     MAX_LEVEL
+                    ADDD    1
+                    STD     GAME_LEVEL
+MAX_LEVEL           PULX
+                    BRA     END_CHECK_EVENTS
+
+DEC_LEVEL           PSHX
+                    LDD     GAME_LEVEL
+                    TDX
+                    CPX     5
+                    BLO     MIN_LEVEL
+                    SUBD    1
+                    STD     GAME_LEVEL
+MIN_LEVEL           PULX
+
+END_CHECK_EVENTS    PULB
+                    PULA
+                    RTS
+
+
+;;------------------------------------------------------------------------------
+;; CPU AI
+;;------------------------------------------------------------------------------
+
+CPU_AI              PSHA
+                    PSHB
+                    PSHX
+
+                    LDX     CPU_PAD_Y
+                    CPX     BALL_Y
+                    BHI     CPU_MOVE_UP
+
+                    LDD     CPU_PAD_Y
+                    ADDD    #PAD_HEIGHT
+                    TDX
+                    CPX     BALL_Y
+                    BLO     CPU_MOVE_DOWN
+
+                    BRA     END_CPU_AI
+
+CPU_MOVE_UP         LDD     CPU_PAD_Y
+                    SUBD    GAME_LEVEL
+                    STD     CPU_PAD_Y
+                    BRA     END_CPU_AI
+
+CPU_MOVE_DOWN       LDD     CPU_PAD_Y
+                    ADDD    GAME_LEVEL
+                    STD     CPU_PAD_Y
+
+END_CPU_AI          PULX
+                    PULB
+                    PULA
+                    RTS
+
+
+;;------------------------------------------------------------------------------
+;; END OF GAME ANIMATIONS
+;;------------------------------------------------------------------------------
+
+GAME_OVER           PSHX
+                    PSHA
+                    PSHB
+
+                    LDX     #FPS * 5
+                    STX     COUNTER_END
+                    LDAA    #COUNTER_ANIM_INIT
+                    STAA    COUNTER_ANIM
+
+                    LDX     #WIN_WIDTH / 4 + 50
+                    STX     PACMAN
+                    LDX     20
+                    STX     GHOST
+
+                    LDR     1
+                    LDG     1
+                    LDB     1
+
+GAME_OVER_LOOP      LDD     #WIN_WIDTH / 4 + #WIN_WIDTH / 8 + 28
+                    TDXA
+                    LDYA    #TEXT_Y
+
+                    JSR     DEC_ANIM_COUNTER
+                    JSR     DRAW_LOSE_TEXT
+                    JSR     GHOST_CHASE
+
+GAME_OVER_FPS       CPK     #FPS
+                    BNE     GAME_OVER_FPS
+                    RSTK
+
+                    LDD     COUNTER_END
+                    SUBD    2
+                    STD     COUNTER_END
+                    TDX
+                    ; FIXME: architecture bug? Flags not properly set with TDX, CPX should be unnecessary
+                    CPX     0
+                    BNE     GAME_OVER_LOOP
+
+                    PULB
+                    PULA
+                    PULX
+                    RTS
+; End GAME_OVER
+
+
+YOU_WIN             PSHX
+                    PSHA
+                    PSHB
+
+                    LDX     #FPS * 5
+                    STX     COUNTER_END
+                    LDAA    #COUNTER_ANIM_INIT
+                    STAA    COUNTER_ANIM
+
+                    LDX     20
+                    STX     PACMAN
+                    LDX     #WIN_WIDTH / 4 + 50
+                    STX     GHOST
+
+                    LDR     1
+                    LDG     1
+                    LDB     1
+
+YOU_WIN_LOOP        LDD     #WIN_WIDTH / 4 + #WIN_WIDTH / 8 + 28
+                    TDXA
+                    LDYA    #TEXT_Y
+
+                    JSR     DEC_ANIM_COUNTER
+                    JSR     DRAW_WIN_TEXT
+                    JSR     PACMAN_CHASE
+
+YOU_WIN_FPS         CPK     #FPS
+                    BNE     YOU_WIN_FPS
+                    RSTK
+
+                    LDD     COUNTER_END
+                    SUBD    2
+                    STD     COUNTER_END
+                    TDX
+                    CPX     0
+                    BNE     YOU_WIN_LOOP
+
+                    PULB
+                    PULA
+                    PULX
+                    RTS
+; End YOU_WIN
+
+
+;;------------------------------------------------------------------------------
+;; GHOST CHASE
+;;------------------------------------------------------------------------------
+
+GHOST_CHASE         PSHA
+                    PSHB
+                    PSHCR
+                    PSHCG
+                    PSHCB
+                    PSHXA
+                    PSHYA
+
+                    LDR     $01
+                    LDG     $01
+                    LDB     $01
+
+                    LDXA    $0000
+                    LDYA    #WALL_BOTTOM
+                    LDXB    #WIN_WIDTH
+                    LDYB    #WALL_TOP
+                    DRRCT
+
+                    LDR     $00
+                    LDG     $00
+                    LDB     $00
+
+                    LDD     PACMAN
+                    TDXA
+                    LDYA    #WALL_BOTTOM + #WALL_TOP / 2 - 3
+                    DRSYM   '<'
+                    ADDD    1
+                    STD     PACMAN
+
+                    LDR     $01
+
+                    LDD     GHOST
+                    TDXA
+                    DRSYM   '^'
+                    ADDD    2
+                    STD     GHOST
+
+                    LDX     PACMAN
+                    CPX     GHOST
+                    BLO     EAT_PACMAN
+                    BRA     END_GHOST_CHASE
+
+EAT_PACMAN          LDX     #WIN_WIDTH + 20
+                    STX     PACMAN
+
+END_GHOST_CHASE     PULYA
+                    PULXA
+                    PULCB
+                    PULCG
+                    PULCR
+                    PULB
+                    PULA
+                    RTS
+
+
+;;------------------------------------------------------------------------------
+;; PACMAN CHASE
+;;------------------------------------------------------------------------------
+
+PACMAN_CHASE        PSHA
+                    PSHB
+                    PSHCR
+                    PSHCG
+                    PSHCB
+                    PSHXA
+                    PSHYA
+
+                    LDR     $01
+                    LDG     $01
+                    LDB     $01
+
+                    LDXA    $0000
+                    LDYA    $0000
+                    LDXB    #WIN_WIDTH
+                    LDYB    #WALL_TOP
+                    DRRCT
+
+                    LDR     $01
+                    LDG     $00
+                    LDB     $00
+
+                    LDD     PACMAN
+                    TDXA
+                    LDYA    #WALL_TOP / 2 - 3
+                    DRSYM   '<'
+                    ADDD    2
+                    STD     PACMAN
+
+                    LDR     $00
+
+                    LDD     GHOST
+                    TDXA
+                    DRSYM   '^'
+                    ADDD    1
+                    STD     GHOST
+
+                    LDX     PACMAN
+                    CPX     GHOST
+                    BHI     EAT_GHOST
+                    BRA     END_PACMAN_CHASE
+
+EAT_GHOST           LDX     #WIN_WIDTH + 20
+                    STX     GHOST
+
+END_PACMAN_CHASE    PULYA
+                    PULXA
+                    PULCB
+                    PULCG
+                    PULCR
+                    PULB
+                    PULA
+                    RTS
+
+
+DRAW_PUMA           PSHCB
+                    PSHCG
+                    PSHCR
+                    PSHYA
+                    PSHXB
+                    PSHYB
+                    PSHA
+
+                    LDYA    #TEXT_Y - 4
+
+                    LDR     $00
+                    LDG     $00
+                    LDB     $00
+
+                    LDXB    16
+                    LDYB    16
+                    DRRCT
+
+                    LDR     $01
+                    LDG     $01
+
+                    LDAA    TOGGLE_ANIM
+                    BEQ     OPEN_MOUTH
+                    ; Closed mouth
+                    DRSYM   '#'
+                    BRA     END_DRAW_PUMA
+OPEN_MOUTH          DRSYM   '@'
+
+END_DRAW_PUMA       PULA
+                    PULYB
+                    PULXB
+                    PULYA
+                    PULCR
+                    PULCG
+                    PULCB
+                    RTS
+
+
+DEC_ANIM_COUNTER    PSHA
+                    LDAA    COUNTER_ANIM
+                    SUBA    1
+                    STAA    COUNTER_ANIM
+                    BNE     END_DEC_ANIM_COUNT
+
+                    ; Counter is zero, reset counter
+                    LDAA    #COUNTER_ANIM_INIT
+                    STAA    COUNTER_ANIM
+                    LDAA    TOGGLE_ANIM
+                    BEQ     TURN_ON
+                    ; Turn off
+                    LDAA    0
+                    STAA    TOGGLE_ANIM
+                    BRA     END_DEC_ANIM_COUNT
+TURN_ON             LDAA    1
+                    STAA    TOGGLE_ANIM
+
+END_DEC_ANIM_COUNT  PULA
+                    RTS
+
+
+;;------------------------------------------------------------------------------
+;; HELPER FUNCTIONS
+;;------------------------------------------------------------------------------
+
+;; This function receives a value and two limits (lower and higher). It returns
+;; The value if it's in between the limits or the limit it exceeds.
+IN_BETWEEN          PULA
+                    PULB    ; Store program counter
+                    STD     TEMP_PC
+
+                    PULX    ; Higher limit
+                    STX     TEMP1
+                    JSR     MAX     ; Lower limit is on the stack
+
+                    LDX     TEMP1
+                    PSHX
+                    JSR     MIN
+
+                    LDD     TEMP_PC
+                    PSHB
+                    PSHA
+                    RTS
+; End IN_BETWEEN
+
+
+;; This function receives as parameters two values, and returns the smaller
+;; one (in the stack).
+;; The values are expected to be of two bytes.
+MIN                 PULA
+                    PULB    ; Store program counter
+
+                    PULX    ; Second param
+                    STX     TEMP
+
+                    PULX    ; First param
+                    CPX     TEMP
+                    BLO     MIN_FIRST
+
+                    LDX     TEMP
+
+MIN_FIRST           PSHX
+                    PSHB
+                    PSHA    ; Restore program counter in stack
+                    RTS
+; End MIN
+
+
+;; This function receives as parameters two values, and returns the bigger
+;; one (in the stack).
+MAX                 PULA
+                    PULB    ; Store program counter
+
+                    PULX    ; Second param
+                    STX     TEMP
+
+                    PULX    ; First param
+                    CPX     TEMP
+                    BHI     MAX_FIRST
+
+                    LDX     TEMP
+
+MAX_FIRST           PSHX
+                    PSHB
+                    PSHA    ; Restore program counter in stack
+                    RTS
+; End MAX
+
+
+;;------------------------------------------------------------------------------
+;; TEXT SUBROUTINES
+;;------------------------------------------------------------------------------
+
+DRAW_LOSE_TEXT      PSHA
+                    PSHB
+
+                    JSR     DRAW_PUMA
+                    JSR     MOVE_FOUR_SPACES
+
+                    DRSYM   'G'
+                    JSR     MOVE_ONE_SPACE
+                    DRSYM   'A'
+                    JSR     MOVE_ONE_SPACE
+                    DRSYM   'M'
+                    JSR     MOVE_ONE_SPACE
+                    DRSYM   'E'
+                    JSR     MOVE_TWO_SPACES
+
+                    DRSYM   'O'
+                    JSR     MOVE_ONE_SPACE
+                    DRSYM   'V'
+                    JSR     MOVE_ONE_SPACE
+                    DRSYM   'E'
+                    JSR     MOVE_ONE_SPACE
+                    DRSYM   'R'
+                    JSR     MOVE_ONE_SPACE
+                    DRSYM   '!'
+                    JSR     MOVE_TWO_SPACES
+
+                    JSR     DRAW_PUMA
+
+                    PULB
+                    PULA
+                    RTS
+; End DRAW_LOSE_TEXT
+
+
+DRAW_WIN_TEXT       PSHA
+                    PSHB
+
+                    JSR     DRAW_PUMA
+                    JSR     MOVE_FOUR_SPACES
+                    JSR     MOVE_ONE_SPACE
+
+                    DRSYM   'Y'
+                    JSR     MOVE_ONE_SPACE
+                    DRSYM   'O'
+                    JSR     MOVE_ONE_SPACE
+                    DRSYM   'U'
+                    JSR     MOVE_TWO_SPACES
+
+                    DRSYM   'W'
+                    JSR     MOVE_ONE_SPACE
+                    DRSYM   'I'
+                    JSR     MOVE_ONE_SPACE
+                    DRSYM   'N'
+                    JSR     MOVE_ONE_SPACE
+                    DRSYM   '!'
+                    JSR     MOVE_TWO_SPACES
+                    JSR     MOVE_ONE_SPACE
+
+                    JSR     DRAW_PUMA
+
+                    PULB
+                    PULA
+                    RTS
+; End DRAW_WIN_TEXT
+
+
+NEW_LINE            PSHA
+                    PSHB
+
+                    LDD     LINE_POS
+                    ADDD    #LINE_SPACE
+                    STD     LINE_POS
+                    TDYA
+
+                    PULB
+                    PULA
+                    RTS
+
+MOVE_ONE_SPACE      ADDD    #CHAR_SPACE
+                    TDXA
+                    RTS
+
+MOVE_TWO_SPACES     ADDD    #CHAR_SPACE * 2
+                    TDXA
+                    RTS
+
+MOVE_FOUR_SPACES    ADDD    #CHAR_SPACE * 4
+                    TDXA
+                    RTS
