@@ -1,7 +1,7 @@
 # Semantic analysis of an AST (parsed 68hc11 assembly code).
 
 from __future__ import print_function
-from asmconstants import SIZE
+from asmconstants import SIZE, ONE_BYTE_INST
 from asmerrors import error, warn
 from asmgrammar import Inst, Var
 
@@ -21,7 +21,8 @@ def analyse(ast, const_table, data_table, inst_table, errors):
 def first_pass(ast, const_table, data_table, inst_table, errors):
     """The first pass assigns an address to variables (data segment) and
     labels, and checks for undefined references. It also warns about constants,
-    variables and labels that are not used.
+    variables and labels that are not used, and about mismatches between
+    variable size and instruction size.
     """
     data_offset = inst_table[SIZE]
     code_offset = 0
@@ -51,6 +52,13 @@ def first_pass(ast, const_table, data_table, inst_table, errors):
                     else:
                         data_table[value].used = True
                         elem.inst = (name, size, 'ext', data_table[value].addr)
+
+                        var_size = data_table[value].size
+                        inst_size = 1 if name in ONE_BYTE_INST else 2
+                        if inst_size != var_size:
+                            warn("Size mismatch. Instruction {0} expects {1:d} byte{2}, variable {3} has {4:d} byte{5}",
+                                    name, inst_size, 's' if inst_size > 1 else '', value, var_size,
+                                    's' if var_size > 1 else '', lineno=elem.lineno)
             elif len(elem.inst) == 5:
                 _, _, inst_type, _, label = elem.inst
                 if inst_type == 'imm-rel':

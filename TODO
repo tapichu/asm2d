@@ -12,6 +12,7 @@ Features
 ========
 
 * CLI argument to specify the start address.
+* CLI flags to turn on/off warnings.
 * Optimizations:
     * Optimization phase.
     * Optimization: 'direct' instructions to save some bytes when the address
@@ -23,6 +24,4 @@ Bugs
 * Fix problem with signed/unsigned HEX numbers. They're interpreted as signed
   (2's compliment) in the lexer. We should probably leave this to the parser,
   once we know if the instruction needs a signed or unsigned value.
-* Should extended instructions check that the VAR used be of the exact number
-  of bytes? (CPX -> 2 bytes, SUBA -> 1 byte).
 * Find out how to generate parsetab.py file in the install directory.
