@@ -31,21 +31,21 @@ Compile a file:
 
 .. code:: bash
 
-    asm2d source.s
+    asm2d source.s2d
 
 The default output file will have the same name as the source file, but with
 a ``.mif`` extension. You can change this with the ``-o`` flag:
 
 .. code:: bash
 
-    asm2d source.s -o memory.mif
+    asm2d source.s2d -o memory.mif
 
 The size of the memory block will be exactly the number of words needed to
 translate the assembly code. You can change this with the ``-w`` argument:
 
 .. code:: bash
 
-    asm2d source.s -w 512
+    asm2d source.s2d -w 512
 
 Help
 ~~~~
