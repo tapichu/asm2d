@@ -195,7 +195,9 @@ def p_instruction_branch(p):
                    | BEQ IDENTIFIER
                    | BHI IDENTIFIER
                    | BLO IDENTIFIER
+                   | BMI IDENTIFIER
                    | BNE IDENTIFIER
+                   | BPL IDENTIFIER
                    | BRA IDENTIFIER'''
     p[0] = (p[1], 2, p[2])
 

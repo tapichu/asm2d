@@ -15,7 +15,9 @@ tokens = (
         'BHI',              # Branch if higher
         'BKE',              # Branch if key event
         'BLO',              # Branch if lower
+        'BMI',              # Branch if minus
         'BNE',              # Branch not equal zero
+        'BPL',              # Branch if plus
         'BRA',              # Branch always
         'CHAR',             # 'A', '1', etc.
         'CLRS',             # Clear screen

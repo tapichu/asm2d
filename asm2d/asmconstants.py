@@ -14,7 +14,9 @@ OP_CODES = {
         'BHI': 0x22,
         'BKE': 0xB5,            # Shadows BITA
         'BLO': 0x25,
+        'BMI': 0x2B,
         'BNE': 0x26,
+        'BPL': 0x2A,
         'BRA': 0x20,
         'CLRS': 0x95,           # Shadows BITA
         'CPK': {'imm': 0x85},   # Shadows BITA
