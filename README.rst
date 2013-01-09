@@ -1,10 +1,10 @@
 Assembler for the 68112D microprocessor
 =======================================
 
-The 68112D is a clone of the 68HC11 microcontroller, with extra instructions
-to generate 2D graphics on a VGA display.
+The 68112D is a clone of the 68HC11 microcontroller, with extra instructions to
+generate 2D graphics on a VGA display.
 
-The **asm2d** assembler turns the assembly code into an MIF file (Memory
+The **asm2d** assembler turns assembly code into an MIF file (Memory
 Initialization File) that can be used to initialize a memory block during
 compilation and/or simulation.
 
@@ -33,8 +33,8 @@ Compile a file:
 
     asm2d source.s2d
 
-The default output file will have the same name as the source file, but with
-a ``.mif`` extension. You can change this with the ``-o`` flag:
+The default output file will have the same name as the source file, but with a
+``.mif`` extension. You can change this with the ``-o`` flag:
 
 .. code:: bash
 
