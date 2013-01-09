@@ -1,16 +1,17 @@
 # Semantic analysis of an AST (parsed 68hc11 assembly code).
 
 from __future__ import print_function
-from asmconstants import SIZE, ONE_BYTE_INST
+from asmconstants import SIZE, INST_ONE_BYTE, INST_UNSIGNED
 from asmerrors import error, warn
 from asmgrammar import Inst, Var
 
+MAIN = '.main'
 MAIN_ADDR = 0
 
 def analyse(ast, const_table, data_table, inst_table, errors):
     "Semantic analysis for the AST."
 
-    if '.main' not in inst_table:
+    if MAIN not in inst_table:
         error("Main entry point not defined", errors=errors)
 
     first_pass(ast, const_table, data_table, inst_table, errors)
@@ -34,7 +35,7 @@ def first_pass(ast, const_table, data_table, inst_table, errors):
             data_offset += elem.size
         if isinstance(elem, Inst):
             if elem.label != '':
-                if elem.label == '.main': main_lineno = elem.lineno
+                if elem.label == MAIN: main_lineno = elem.lineno
                 inst_table[elem.label].addr = code_offset
             code_offset += elem.size
 
@@ -54,9 +55,9 @@ def first_pass(ast, const_table, data_table, inst_table, errors):
                         elem.inst = (name, size, 'ext', data_table[value].addr)
 
                         var_size = data_table[value].size
-                        inst_size = 1 if name in ONE_BYTE_INST else 2
+                        inst_size = 1 if name in INST_ONE_BYTE else 2
                         if inst_size != var_size:
-                            warn("Size mismatch. Instruction {0} expects {1:d} byte{2}, variable {3} has {4:d} byte{5}",
+                            warn("Size mismatch: instruction {0} expects {1:d} byte{2}, variable {3} has {4:d} byte{5}",
                                     name, inst_size, 's' if inst_size > 1 else '', value, var_size,
                                     's' if var_size > 1 else '', lineno=elem.lineno)
             elif len(elem.inst) == 5:
@@ -77,7 +78,7 @@ def first_pass(ast, const_table, data_table, inst_table, errors):
     for label in [k for k in inst_table if k != SIZE and inst_table[k].used == False]:
         warn("Unused label {}", label, lineno=inst_table[label].lineno)
 
-    if '.main' in inst_table and inst_table['.main'].addr != MAIN_ADDR:
+    if MAIN in inst_table and inst_table[MAIN].addr != MAIN_ADDR:
         error("Main label should be the first instruction",lineno=main_lineno, errors=errors)
 
 def second_pass(ast, data_table, inst_table, errors):
@@ -88,7 +89,7 @@ def second_pass(ast, data_table, inst_table, errors):
         if isinstance(elem, Inst):
             if len(elem.inst) == 4:
                 name, size, inst_type, value = elem.inst
-                if name in {'CPK', 'LDB', 'LDG', 'LDR', 'RNDA'}:
+                if name in INST_UNSIGNED:
                     if value < 0 or value > 255:
                         error("Value out of range {0} (instruction {1})",
                                 value, name, lineno=elem.lineno, errors=errors)

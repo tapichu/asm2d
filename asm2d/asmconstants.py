@@ -79,7 +79,9 @@ OP_CODES = {
         }
 
 # Extended instructions that operate on one byte
-ONE_BYTE_INST = {'LDAA', 'LDAB', 'LDB', 'LDG', 'LDR', 'STAA', 'STAB', 'SUBA'}
+INST_ONE_BYTE = {'LDAA', 'LDAB', 'LDB', 'LDG', 'LDR', 'STAA', 'STAB', 'SUBA'}
+# Instructions that interpret the numbers as unsigned
+INST_UNSIGNED = {'CPK', 'LDB', 'LDG', 'LDR', 'RNDA'}
 
 # Opcodes for graphic unit
 SYM_TABLE = {k:BitArray(int=v, length=8).hex.upper()
